@@ -1,6 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { createBrowserRouter, redirect } from "react-router";
 import { paths } from "./config/paths";
+import { classroomQueries } from "./features/classroom/queries";
 import { requireRole } from "./lib/guards";
 import { protectedLoader, publicOnlyLoader } from "./lib/protected-loader";
 
@@ -58,12 +59,13 @@ export function createRouter(queryClient: QueryClient) {
 						},
 						{
 							path: paths.portal.teacher.classrooms.path,
+							loader: () => queryClient.query(classroomQueries.list()),
 							handle: { title: "Classrooms" },
 							lazy: () => lazyImport("./routes/teacher/classrooms"),
 						},
 						{
 							path: paths.portal.teacher.courses.path,
-							handle: { title: "My Courses" },
+							handle: { title: "Course Library" },
 							lazy: () => lazyImport("./routes/teacher/courses"),
 						},
 					],

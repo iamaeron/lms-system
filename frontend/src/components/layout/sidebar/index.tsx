@@ -25,7 +25,7 @@ import {
 	MenuSeparator,
 	MenuTrigger,
 } from "@/components/ui/menu";
-import { sidebarNavigation } from "@/constants/nav-links";
+import { sidebarNavigation } from "@/config/nav-links";
 import { authClient } from "@/lib/auth-client";
 import { sessionQueryOptions } from "@/lib/session";
 import NavItem from "./nav-item";

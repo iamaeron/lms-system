@@ -24,7 +24,7 @@ export const publicOnlyLoader = (queryClient: QueryClient) => async () => {
 	const user = await queryClient.query(sessionQueryOptions);
 
 	if (user) {
-		throw redirect("/seller/dashboard");
+		throw redirect(`/portal/${user.role}`);
 	}
 
 	return null;

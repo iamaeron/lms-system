@@ -87,7 +87,10 @@ export const verification = pgTable(
 );
 
 // 7-char class codes, no look-alike characters (0/O, 1/I/L)
-const generateJoinCode = customAlphabet("ABCDEFGHJKMNPQRSTUVWXYZ23456789", 7);
+export const generateJoinCode = customAlphabet(
+	"ABCDEFGHJKMNPQRSTUVWXYZ23456789",
+	7,
+);
 
 // ---------- helpers ----------
 const id = () =>

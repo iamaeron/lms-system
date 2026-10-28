@@ -2,6 +2,9 @@ import { serve } from "@hono/node-server";
 import { type Context, Hono } from "hono";
 import { cors } from "hono/cors";
 import { auth } from "./lib/auth";
+import { notFound, onError } from "./lib/errors";
+
+import { classroomRoutes } from "./routes/classroom.route";
 
 const app = new Hono();
 
@@ -12,6 +15,9 @@ app.use(
 		credentials: true,
 	}),
 );
+
+// app.onError(onError);
+// app.notFound(notFound);
 
 app.use("*", async (c: Context, next) => {
 	const session = await auth.api.getSession({ headers: c.req.raw.headers });
@@ -28,6 +34,8 @@ app.use("*", async (c: Context, next) => {
 });
 
 app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
+
+app.route("/api", classroomRoutes);
 
 serve(
 	{
