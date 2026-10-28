@@ -1,0 +1,28 @@
+{
+  "languages": {
+    "TypeScript": {
+      "language_servers": [
+        "tsgo",
+        "!typescript-language-server",
+        "!vtsls",
+        "...",
+      ],
+    },
+    "TSX": {
+      "language_servers": [
+        "tsgo",
+        "!typescript-language-server",
+        "!vtsls",
+        "...",
+      ],
+    },
+  },
+  "lsp": {
+    "typescript-ls": {
+      "binary": {
+        "path": "tsrs",
+        "arguments": ["--lsp", "-stdio"],
+      },
+    },
+  },
+}
