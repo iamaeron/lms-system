@@ -1,120 +1,201 @@
 // import {  } from "@solar-icons/react/bold";
-import { DocumentsIcon, LogoutIcon } from "@solar-icons/react/bold-duotone";
+
 import {
-  AltArrowDownIcon,
-  PanelRightOpenIcon,
+	BellIcon,
+	Dialog2Icon,
+	LogoutIcon,
+	SettingsMinimalisticIcon,
+	SquareAcademicCapIcon,
+	UserIcon,
+} from "@solar-icons/react/bold-duotone";
+import {
+	AltArrowDownIcon,
+	PanelRightOpenIcon,
 } from "@solar-icons/react/linear";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { ActionIcon } from "@/components/ui/action-icon";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+	Menu,
+	MenuItem,
+	MenuPopup,
+	MenuPortal,
+	MenuPositioner,
+	MenuSeparator,
+	MenuTrigger,
+} from "@/components/ui/menu";
 import { sidebarNavigation } from "@/constants/nav-links";
 import { authClient } from "@/lib/auth-client";
 import { sessionQueryOptions } from "@/lib/session";
 import NavItem from "./nav-item";
 
 const Sidebar = () => {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 
-  // Access the cached user session resolved by the loader
-  const { data: user, isPending } = useQuery(sessionQueryOptions);
+	// Access the cached user session resolved by the loader
+	const { data: user, isPending } = useQuery(sessionQueryOptions);
 
-  const handleSignOut = async () => {
-    await authClient.signOut();
-    queryClient.invalidateQueries({ queryKey: ["session"] });
-    navigate("/login");
-  };
+	const handleSignOut = async () => {
+		await authClient.signOut();
+		queryClient.invalidateQueries({ queryKey: ["session"] });
+		navigate("/login");
+	};
 
-  return (
-    // <div className="w-76 p-2 flex">
-    <aside className="flex flex-col w-76 border border-zinc-200 bg-zinc-100">
-      <header className="flex items-center justify-between pl-3 pt-4 pr-2">
-        <div className="flex items-center gap-3 px-0.5">
-          <div className="flex items-center gap-2">
-            <div className="p-1 rounded-lg shadow-sm shadow-black/2 bg-zinc-50 border border-black/5">
-              <DocumentsIcon
-                strokeWidth={2}
-                size={24}
-                className="text-blue-500"
-              />
-            </div>
-            <span className="font-semibold text-xl tracking-tight text-zinc-700">
-              LMS
-            </span>
-          </div>
-        </div>
-        {/* <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded capitalize">
+	return (
+		// <div className="w-76 p-2 flex">
+		<aside className="flex flex-col w-70 border border-zinc-200 bg-zinc-100">
+			<header className="flex items-center justify-between pl-3 pt-4 pr-2">
+				<div className="flex items-center gap-3 px-0.5">
+					<div className="flex items-center gap-2">
+						<div className="p-1 rounded-lg shadow-sm shadow-black/2 bg-zinc-50 border border-black/5">
+							<SquareAcademicCapIcon
+								strokeWidth={2}
+								size={24}
+								className="text-blue-500"
+							/>
+						</div>
+						<span className="font-semibold text-xl tracking-tight text-zinc-700">
+							LMS
+						</span>
+					</div>
+				</div>
+				{/* <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded capitalize">
             {user?.role}
           </span> */}
 
-        <ActionIcon variant="ghost">
-          <PanelRightOpenIcon strokeWidth={2} size={20} />
-        </ActionIcon>
-      </header>
+				<ActionIcon variant="ghost">
+					<PanelRightOpenIcon strokeWidth={2} size={20} />
+				</ActionIcon>
+			</header>
 
-      <div className="px-2 mt-5 mb-1">
-        <div className="hover:bg-zinc-200 py-1.5 px-2 rounded-lg flex gap-2 items-center">
-          <Avatar>
-            <AvatarFallback className="font-semibold">
-              {user?.name.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 truncate">
-            <span className="block font-medium text-sm text-foreground">
-              {user?.name}
-            </span>
-            <span className="leading-none mb-1 block text-sm text-muted-foreground">
-              {user?.email}
-            </span>
-          </div>
+			<div className="px-2 mt-5 mb-1">
+				<Menu>
+					<MenuTrigger
+						render={(props) => (
+							<button
+								{...props}
+								className="hover:bg-zinc-200 py-1.5 px-2 w-full text-left rounded-lg flex gap-2 items-center"
+							>
+								<Avatar>
+									<AvatarFallback className="font-semibold">
+										{user?.name.charAt(0)}
+									</AvatarFallback>
+								</Avatar>
+								<div className="flex-1 truncate">
+									<span className="block text-sm text-foreground">
+										{user?.name}
+									</span>
+									<span className="leading-none mb-1 block text-sm text-muted-foreground">
+										{user?.email}
+									</span>
+								</div>
 
-          {/* <ActionIcon variant="ghost"> */}
-          <AltArrowDownIcon strokeWidth={2} size={16} />
-          {/* </ActionIcon> */}
-        </div>
-      </div>
+								{/* <ActionIcon variant="ghost"> */}
+								<AltArrowDownIcon strokeWidth={2} size={16} />
+								{/* </ActionIcon> */}
+							</button>
+						)}
+					></MenuTrigger>
 
-      {/* main navs */}
-      {isPending || !user ? (
-        <div className="flex-1"></div>
-      ) : (
-        <div className="flex-1">
-          {sidebarNavigation[user.role].map((section) => (
-            <div
-              key={section.group}
-              className="mb-4 border-t border-zinc-200 border-dashed group first:border-0"
-            >
-              <hr className="border-t border-white group-first:border-0 mb-4 border-dashed" />
-              <div className="px-3">
-                <p className="text-xs font-medium text-zinc-400 px-2 mb-2">
-                  {section.group}
-                </p>
+					<MenuPortal>
+						<MenuPositioner sideOffset={6}>
+							<MenuPopup className="w-(--anchor-width)">
+								<div className="px-3 pb-1.5 text-muted-foreground text-sm">
+									{user?.name}
+								</div>
+								<MenuItem>
+									<UserIcon
+										strokeWidth={2}
+										size={20}
+										className="text-muted-foreground shrink-0"
+									/>
+									<span>Profile</span>
+								</MenuItem>
+								<MenuItem>
+									<BellIcon
+										strokeWidth={2}
+										size={20}
+										className="text-muted-foreground shrink-0"
+									/>
+									<span>Notifications</span>
+								</MenuItem>
+								<MenuItem>
+									<Dialog2Icon
+										strokeWidth={2}
+										size={20}
+										className="text-muted-foreground shrink-0"
+									/>
+									<span>Messages</span>
+								</MenuItem>
+								<MenuSeparator />
+								<MenuItem>
+									<SettingsMinimalisticIcon
+										strokeWidth={2}
+										size={20}
+										className="text-muted-foreground shrink-0"
+									/>
+									<span>Settings</span>
+								</MenuItem>
+								{/* <MenuSeparator /> */}
+								<MenuItem onClick={handleSignOut}>
+									<LogoutIcon
+										strokeWidth={2}
+										size={20}
+										className="text-muted-foreground shrink-0"
+									/>
+									<span>Log out</span>
+								</MenuItem>
+							</MenuPopup>
+						</MenuPositioner>
+					</MenuPortal>
+				</Menu>
+			</div>
 
-                <div className="space-y-1">
-                  {section.items.map((item) => (
-                    <NavItem key={item.link} item={item} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-      {/* <hr className="border-t border-zinc-200" /> */}
-      <div className="p-3">
-        <button
+			{/* main navs */}
+			{isPending || !user ? (
+				<div className="flex-1"></div>
+			) : (
+				<div className="flex-1">
+					{sidebarNavigation[user.role].map((section) => (
+						<div
+							key={section.group}
+							className="mb-4 border-t border-zinc-200 border-dashed group first:border-0"
+						>
+							<hr className="border-t border-white group-first:border-0 mb-4 border-dashed" />
+							<div className="px-3">
+								<p className="text-xs font-medium text-muted-foreground px-2 mb-1">
+									{section.group}
+								</p>
+
+								<div>
+									{section.items.map((item) => (
+										<NavItem key={item.link} item={item} />
+									))}
+								</div>
+							</div>
+						</div>
+					))}
+				</div>
+			)}
+			{/* <hr className="border-t border-zinc-200" /> */}
+			<div className="p-3">
+				<div className="p-1.5 rounded-md border border-black/5 shadow-sm shadow-black/2 bg-zinc-50 text-sm text-zinc-700">
+					Notification
+				</div>
+				{/*<button
           type="button"
           onClick={handleSignOut}
           className="flex gap-3 items-center font-medium text-sm text-muted-foreground px-2.5 py-1.5 hover:bg-zinc-200 rounded-lg w-full hover:text-zinc-700"
         >
           <LogoutIcon strokeWidth={2} size={20} className="shrink-0" />
           <span>Log out</span>
-        </button>
-      </div>
-    </aside>
-    // </div>
-  );
+        </button>*/}
+			</div>
+		</aside>
+		// </div>
+	);
 };
 
 export default Sidebar;

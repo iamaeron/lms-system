@@ -90,12 +90,12 @@ const studentNavigation = [
         activeIcon: StarIconBold,
         link: "/student/reviews",
       },
-      {
-        label: "Settings",
-        icon: SettingsMinimalisticIcon,
-        activeIcon: SettingsMinimalisticIconBold,
-        link: "/student/settings",
-      },
+      // {
+      //   label: "Settings",
+      //   icon: SettingsMinimalisticIcon,
+      //   activeIcon: SettingsMinimalisticIconBold,
+      //   link: "/student/settings",
+      // },
     ],
   },
 ];
@@ -165,17 +165,17 @@ const teacherNavigation = [
       },
     ],
   },
-  {
-    group: "SETTINGS",
-    items: [
-      {
-        label: "Settings",
-        icon: SettingsMinimalisticIcon,
-        activeIcon: SettingsMinimalisticIconBold,
-        link: "/teacher/settings",
-      },
-    ],
-  },
+  // {
+  //   group: "SETTINGS",
+  //   items: [
+  //     {
+  //       label: "Settings",
+  //       icon: SettingsMinimalisticIcon,
+  //       activeIcon: SettingsMinimalisticIconBold,
+  //       link: "/teacher/settings",
+  //     },
+  //   ],
+  // },
 ];
 
 // ---------- ADMIN ----------
@@ -237,17 +237,17 @@ const adminNavigation = [
       },
     ],
   },
-  {
-    group: "SETTINGS",
-    items: [
-      {
-        label: "Settings",
-        icon: SettingsMinimalisticIcon,
-        activeIcon: SettingsMinimalisticIconBold,
-        link: "/admin/settings",
-      },
-    ],
-  },
+  // {
+  //   group: "SETTINGS",
+  //   items: [
+  //     {
+  //       label: "Settings",
+  //       icon: SettingsMinimalisticIcon,
+  //       activeIcon: SettingsMinimalisticIconBold,
+  //       link: "/admin/settings",
+  //     },
+  //   ],
+  // },
 ];
 
 export const sidebarNavigation: Record<UserRole, typeof studentNavigation> = {

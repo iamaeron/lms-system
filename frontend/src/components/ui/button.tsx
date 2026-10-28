@@ -19,9 +19,9 @@ const button = cva(
 				link: "text-primary underline-offset-4 hover:underline",
 			},
 			size: {
-				default: "px-3.5 py-1.5 has-[>svg]:pl-3",
-				sm: "rounded-full gap-1.5 px-3 py-0.75 has-[>svg]:pl-2.5",
-				lg: "text-base gap-3 px-7 py-2.5 rounded-full has-[>svg]:pl-4",
+				default: "px-3.5 py-1.5 has-[>[data-content]>svg]:pl-3",
+				sm: "rounded-full gap-1.5 px-3 py-0.75 has-[>[data-content]>svg]:pl-2.5",
+				lg: "text-base gap-3 px-7 py-2.5 rounded-full has-[>[data-content]>svg]:pl-4",
 				icon: "size-9",
 			},
 		},
@@ -81,6 +81,7 @@ export function Button({
 				</span>
 			)}
 			<span
+				data-content
 				className={cn(
 					"inline-flex items-center justify-center gap-2",
 					loading && "invisible",

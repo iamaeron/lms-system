@@ -110,12 +110,8 @@ export const courseStatus = pgEnum("course_status", [
 	"archived",
 ]);
 export const courseLevel = pgEnum("course_level", ["minor", "major"]);
-export const lessonType = pgEnum("lesson_type", [
-	"video",
-	"text",
-	"quiz",
-	"assignment",
-]);
+// "assignment" was removed: assignments now live in the classroom (see `post`)
+export const lessonType = pgEnum("lesson_type", ["video", "text", "quiz"]);
 export const classroomRole = pgEnum("classroom_role", ["teacher", "student"]);
 export const questionType = pgEnum("question_type", [
 	"single_choice",
@@ -126,6 +122,23 @@ export const submissionStatus = pgEnum("submission_status", [
 	"submitted",
 	"graded",
 	"returned",
+]);
+export const postType = pgEnum("post_type", [
+	"announcement", // stream only
+	"material", // classwork, no grading
+	"assignment", // classwork, due date + points + submissions
+	"quiz", // classwork, points to a quiz from a course
+]);
+export const postStatus = pgEnum("post_status", [
+	"draft",
+	"scheduled",
+	"published",
+]);
+export const attachmentKind = pgEnum("attachment_kind", [
+	"course",
+	"lesson",
+	"link",
+	"file",
 ]);
 
 // ---------- catalog ----------
@@ -143,6 +156,9 @@ export const department = pgTable("department", {
 	description: text("description"),
 });
 
+// ---------- course library ----------
+// Courses are reusable content (sections -> lessons -> quizzes).
+// They are NOT tied to a classroom; teachers attach them to posts.
 export const course = pgTable(
 	"course",
 	{
@@ -155,8 +171,6 @@ export const course = pgTable(
 		level: courseLevel("level").default("major").notNull(), // minor / major subject
 		gradeLevel: integer("grade_level"), // e.g. 7 for Grade 7; null if it spans grades
 		status: courseStatus("status").default("draft").notNull(),
-		priceCents: integer("price_cents").default(0).notNull(),
-		currency: text("currency").default("USD").notNull(),
 		publishedAt: timestamp("published_at"),
 		instructorId: text("instructor_id")
 			.notNull()
@@ -177,7 +191,6 @@ export const course = pgTable(
 	],
 );
 
-// ---------- content ----------
 export const section = pgTable(
 	"section",
 	{
@@ -205,26 +218,27 @@ export const lesson = pgTable(
 		videoUrl: text("video_url"),
 		durationSeconds: integer("duration_seconds"),
 		position: integer("position").notNull(),
-		isPreview: boolean("is_preview").default(false).notNull(), // watchable without enrolling
+		isPreview: boolean("is_preview").default(false).notNull(), // watchable without joining a class
 		...timestamps,
 	},
 	(t) => [index("lesson_section_idx").on(t.sectionId)],
 );
 
-// ---------- learner activity ----------
-// A classroom is one run of a course for a group of people, joined with a code.
+// ---------- classrooms ----------
+// A classroom is a class group (e.g. "Grade 8 - Rizal"), joined with a code.
+// It contains a stream, classwork organised by topic, and people.
 // ("class" is a reserved word in JS/TS, hence "classroom")
 export const classroom = pgTable(
 	"classroom",
 	{
 		id: id(),
-		courseId: text("course_id")
-			.notNull()
-			.references(() => course.id, { onDelete: "cascade" }),
 		ownerId: text("owner_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "restrict" }),
-		name: text("name").notNull(), // e.g. "Algebra I - Period 3"
+		name: text("name").notNull(), // e.g. "Algebra I"
+		section: text("section"), // e.g. "Period 3" / "Rizal"
+		subject: text("subject"), // e.g. "Mathematics"
+		gradeLevel: integer("grade_level"),
 		description: text("description"),
 		joinCode: text("join_code")
 			.notNull()
@@ -234,13 +248,11 @@ export const classroom = pgTable(
 		archivedAt: timestamp("archived_at"),
 		...timestamps,
 	},
-	(t) => [
-		index("classroom_course_idx").on(t.courseId),
-		index("classroom_owner_idx").on(t.ownerId),
-	],
+	(t) => [index("classroom_owner_idx").on(t.ownerId)],
 );
 
-// Membership: replaces "enrollment". Role is per classroom, like Google Classroom.
+// Membership. Role is per classroom, like Google Classroom.
+// The owner should also get a "teacher" row here.
 export const classroomMember = pgTable(
 	"classroom_member",
 	{
@@ -260,10 +272,135 @@ export const classroomMember = pgTable(
 	],
 );
 
+// Topics group classwork ("Week 1", "Module 2", "Quizzes")
+export const topic = pgTable(
+	"topic",
+	{
+		id: id(),
+		classroomId: text("classroom_id")
+			.notNull()
+			.references(() => classroom.id, { onDelete: "cascade" }),
+		name: text("name").notNull(),
+		position: integer("position").notNull(),
+		...timestamps,
+	},
+	(t) => [index("topic_classroom_idx").on(t.classroomId)],
+);
+
+// ---------- stream + classwork ----------
+// One table for everything a teacher posts:
+//   announcement -> stream only
+//   material     -> classwork, attachments only
+//   assignment   -> classwork, dueAt / maxPoints / submissions
+//   quiz         -> classwork, points at a quiz from a course
+export const post = pgTable(
+	"post",
+	{
+		id: id(),
+		classroomId: text("classroom_id")
+			.notNull()
+			.references(() => classroom.id, { onDelete: "cascade" }),
+		authorId: text("author_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		topicId: text("topic_id").references(() => topic.id, {
+			onDelete: "set null",
+		}),
+		type: postType("type").notNull(),
+		title: text("title"), // null is fine for announcements
+		body: text("body"), // announcement text / instructions
+		status: postStatus("status").default("published").notNull(),
+		scheduledAt: timestamp("scheduled_at"),
+		publishedAt: timestamp("published_at"),
+		// assignment + quiz
+		dueAt: timestamp("due_at"),
+		maxPoints: integer("max_points"), // null = ungraded
+		// quiz only
+		quizId: text("quiz_id").references(() => quiz.id, {
+			onDelete: "set null",
+		}),
+		...timestamps,
+	},
+	(t) => [
+		index("post_classroom_idx").on(t.classroomId, t.publishedAt),
+		index("post_topic_idx").on(t.topicId),
+		index("post_author_idx").on(t.authorId),
+	],
+);
+
+// Things attached to a post: a whole course, a single lesson, a link or a file
+export const postAttachment = pgTable(
+	"post_attachment",
+	{
+		id: id(),
+		postId: text("post_id")
+			.notNull()
+			.references(() => post.id, { onDelete: "cascade" }),
+		kind: attachmentKind("kind").notNull(),
+		courseId: text("course_id").references(() => course.id, {
+			onDelete: "cascade",
+		}),
+		lessonId: text("lesson_id").references(() => lesson.id, {
+			onDelete: "cascade",
+		}),
+		name: text("name"), // display name for links and files
+		url: text("url"), // link or file URL
+		position: integer("position").default(0).notNull(),
+	},
+	(t) => [index("post_attachment_post_idx").on(t.postId)],
+);
+
+// Class comments under a post
+export const postComment = pgTable(
+	"post_comment",
+	{
+		id: id(),
+		postId: text("post_id")
+			.notNull()
+			.references(() => post.id, { onDelete: "cascade" }),
+		authorId: text("author_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		body: text("body").notNull(),
+		...timestamps,
+	},
+	(t) => [index("post_comment_post_idx").on(t.postId)],
+);
+
+// ---------- student work ----------
+// A student's turn-in for an assignment post
+export const submission = pgTable(
+	"submission",
+	{
+		id: id(),
+		postId: text("post_id")
+			.notNull()
+			.references(() => post.id, { onDelete: "cascade" }),
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		content: text("content"),
+		fileUrl: text("file_url"),
+		status: submissionStatus("status").default("submitted").notNull(),
+		grade: integer("grade"),
+		feedback: text("feedback"),
+		gradedBy: text("graded_by").references(() => user.id, {
+			onDelete: "set null",
+		}),
+		submittedAt: timestamp("submitted_at").defaultNow().notNull(),
+		gradedAt: timestamp("graded_at"),
+	},
+	(t) => [uniqueIndex("submission_post_user_uidx").on(t.postId, t.userId)],
+);
+
+// Progress is per classroom, so the same course in two classes is tracked separately
 export const lessonProgress = pgTable(
 	"lesson_progress",
 	{
 		id: id(),
+		classroomId: text("classroom_id")
+			.notNull()
+			.references(() => classroom.id, { onDelete: "cascade" }),
 		userId: text("user_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
@@ -275,7 +412,12 @@ export const lessonProgress = pgTable(
 		...timestamps,
 	},
 	(t) => [
-		uniqueIndex("lesson_progress_user_lesson_uidx").on(t.userId, t.lessonId),
+		uniqueIndex("lesson_progress_class_user_lesson_uidx").on(
+			t.classroomId,
+			t.userId,
+			t.lessonId,
+		),
+		index("lesson_progress_user_idx").on(t.userId),
 	],
 );
 
@@ -332,6 +474,10 @@ export const quizAttempt = pgTable(
 		quizId: text("quiz_id")
 			.notNull()
 			.references(() => quiz.id, { onDelete: "cascade" }),
+		// set when taken as classwork, so attempts are scoped to one classroom post
+		postId: text("post_id").references(() => post.id, {
+			onDelete: "cascade",
+		}),
 		userId: text("user_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
@@ -341,49 +487,9 @@ export const quizAttempt = pgTable(
 		startedAt: timestamp("started_at").defaultNow().notNull(),
 		submittedAt: timestamp("submitted_at"),
 	},
-	(t) => [index("quiz_attempt_quiz_user_idx").on(t.quizId, t.userId)],
-);
-
-// ---------- assignments ----------
-export const assignment = pgTable(
-	"assignment",
-	{
-		id: id(),
-		lessonId: text("lesson_id")
-			.notNull()
-			.references(() => lesson.id, { onDelete: "cascade" }),
-		title: text("title").notNull(),
-		instructions: text("instructions"),
-		maxPoints: integer("max_points").default(100).notNull(),
-		dueAt: timestamp("due_at"),
-		...timestamps,
-	},
-	(t) => [index("assignment_lesson_idx").on(t.lessonId)],
-);
-
-export const submission = pgTable(
-	"submission",
-	{
-		id: id(),
-		assignmentId: text("assignment_id")
-			.notNull()
-			.references(() => assignment.id, { onDelete: "cascade" }),
-		userId: text("user_id")
-			.notNull()
-			.references(() => user.id, { onDelete: "cascade" }),
-		content: text("content"),
-		fileUrl: text("file_url"),
-		status: submissionStatus("status").default("submitted").notNull(),
-		grade: integer("grade"),
-		feedback: text("feedback"),
-		gradedBy: text("graded_by").references(() => user.id, {
-			onDelete: "set null",
-		}),
-		submittedAt: timestamp("submitted_at").defaultNow().notNull(),
-		gradedAt: timestamp("graded_at"),
-	},
 	(t) => [
-		uniqueIndex("submission_assignment_user_uidx").on(t.assignmentId, t.userId),
+		index("quiz_attempt_quiz_user_idx").on(t.quizId, t.userId),
+		index("quiz_attempt_post_idx").on(t.postId),
 	],
 );
 

@@ -17,6 +17,10 @@ export const paths = {
         path: "classrooms",
         getHref: () => "/portal/teacher/classrooms",
       },
+      courses: {
+        path: "courses",
+        getHref: () => "/portal/teacher/courses",
+      },
       quizzes: { path: "quizzes", getHref: () => "/portal/teacher/quizzes" },
       gradebook: {
         path: "gradebook",

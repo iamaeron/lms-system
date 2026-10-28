@@ -16,51 +16,59 @@ import { protectedLoader, publicOnlyLoader } from "./lib/protected-loader";
 //
 
 const lazyImport = (route: string) =>
-  import(route).then((m) => ({ Component: m.default }));
+	import(route).then((m) => ({ Component: m.default }));
 
 export function createRouter(queryClient: QueryClient) {
-  return createBrowserRouter([
-    {
-      path: paths.login.path,
-      loader: publicOnlyLoader(queryClient),
-      lazy: () => lazyImport("./routes/login"),
-    },
-    {
-      path: "/portal",
-      children: [
-        {
-          index: true,
-          loader: async () => {
-            const data = await protectedLoader(queryClient)();
-            throw redirect(`/portal/${data.user.role}`);
-          },
-        },
-        {
-          path: "student",
-          loader: requireRole(queryClient, "student"),
-          children: [
-            {
-              index: true,
-              lazy: () => lazyImport("./routes/student/home"),
-            },
-          ],
-        },
-        {
-          path: "teacher",
-          loader: requireRole(queryClient, "teacher"),
-          lazy: () => lazyImport("./layouts/app-layout"),
-          children: [
-            {
-              index: true,
-              lazy: () => lazyImport("./routes/teacher/home"),
-            },
-            {
-              path: paths.portal.teacher.classrooms.path,
-              lazy: () => lazyImport("./routes/teacher/classrooms"),
-            },
-          ],
-        },
-      ],
-    },
-  ]);
+	return createBrowserRouter([
+		{
+			path: paths.login.path,
+			loader: publicOnlyLoader(queryClient),
+			lazy: () => lazyImport("./routes/login"),
+		},
+		{
+			path: "/portal",
+			children: [
+				{
+					index: true,
+					loader: async () => {
+						const data = await protectedLoader(queryClient)();
+						throw redirect(`/portal/${data.user.role}`);
+					},
+				},
+				{
+					path: "student",
+					loader: requireRole(queryClient, "student"),
+					children: [
+						{
+							index: true,
+							handle: { title: "Student Dashboard" },
+							lazy: () => lazyImport("./routes/student/home"),
+						},
+					],
+				},
+				{
+					path: "teacher",
+					loader: requireRole(queryClient, "teacher"),
+					lazy: () => lazyImport("./layouts/app-layout"),
+					children: [
+						{
+							index: true,
+							handle: { title: "Home" },
+							lazy: () => lazyImport("./routes/teacher/home"),
+						},
+						{
+							path: paths.portal.teacher.classrooms.path,
+							handle: { title: "Classrooms" },
+							lazy: () => lazyImport("./routes/teacher/classrooms"),
+						},
+						{
+							path: paths.portal.teacher.courses.path,
+							handle: { title: "My Courses" },
+							lazy: () => lazyImport("./routes/teacher/courses"),
+						},
+					],
+				},
+			],
+		},
+	]);
 }
