@@ -1,10 +1,10 @@
 import { BellIcon } from "@solar-icons/react/linear";
 import { useQuery } from "@tanstack/react-query";
 import { useMatches } from "react-router";
-import { ActionIcon } from "@/components/ui/action-icon";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Tooltip } from "@/components/ui/tooltip";
 import { sessionQueryOptions } from "@/lib/session";
+import { ActionIcon } from "@/ui/action-icon";
+import { Avatar, AvatarFallback } from "@/ui/avatar";
+import { Tooltip } from "@/ui/tooltip";
 
 const AppLayoutHeader = () => {
 	const { data: user } = useQuery(sessionQueryOptions);

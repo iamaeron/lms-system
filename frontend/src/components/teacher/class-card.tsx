@@ -1,8 +1,8 @@
 import type { ClassroomMember } from "@shared/index";
 import { classLabel } from "@/lib/classroom";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { AvatarGroup } from "../ui/avatar-group";
-import { Tooltip } from "../ui/tooltip";
+import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
+import { AvatarGroup } from "../../ui/avatar-group";
+import { Tooltip } from "../../ui/tooltip";
 
 interface ClassCardProps {
 	detail: ClassroomMember;

@@ -1,6 +1,6 @@
 import { AltArrowDownIcon, CheckIcon } from "@solar-icons/react/linear";
 import { useFieldContext } from "@/lib/form";
-import { Field, FieldControl, FieldLabel } from "../ui/field";
+import { Field, FieldControl, FieldLabel } from "../../ui/field";
 import {
 	Select,
 	SelectItem,
@@ -12,7 +12,7 @@ import {
 	SelectPositioner,
 	SelectTrigger,
 	SelectValue,
-} from "../ui/select";
+} from "../../ui/select";
 
 type SelectOption = {
 	label: string;
@@ -44,6 +44,7 @@ export function SelectField({
 						field.handleChange(value);
 					}
 				}}
+				items={options}
 			>
 				<FieldLabel>{label}</FieldLabel>
 				<FieldControl

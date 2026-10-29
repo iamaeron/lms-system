@@ -5,6 +5,7 @@ import "./assets/fonts/switzer.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "react-router";
 import { createRouter } from "./router.tsx";
+import { ToastProvider } from "./ui/toast.tsx";
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -22,7 +23,9 @@ if (!doc) throw new Error("Root element not found");
 createRoot(doc).render(
 	<StrictMode>
 		<QueryClientProvider client={queryClient}>
-			<RouterProvider router={router} />
+			<ToastProvider>
+				<RouterProvider router={router} />
+			</ToastProvider>
 		</QueryClientProvider>
 	</StrictMode>,
 );

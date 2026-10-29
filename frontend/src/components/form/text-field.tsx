@@ -1,6 +1,6 @@
 import { useFieldContext } from "@/lib/form";
-import { Field, FieldControl, FieldLabel } from "../ui/field";
-import { Input } from "../ui/input";
+import { Field, FieldControl, FieldLabel } from "../../ui/field";
+import { Input } from "../../ui/input";
 
 export function TextField({
 	label,

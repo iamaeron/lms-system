@@ -17,7 +17,6 @@ export const listQuery = z.object({
 export const createClassroomSchema = z.object({
 	name: z.string().trim().min(1).max(100),
 	section: z.string().trim().max(100).optional(),
-	subject: z.string().trim().max(100).optional(),
 	gradeLevel: z.number().int().min(1).max(20).optional(),
 	description: z.string().trim().max(1000).optional(),
 	departmentId: z.string().min(1).optional(),

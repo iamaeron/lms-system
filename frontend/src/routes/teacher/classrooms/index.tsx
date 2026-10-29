@@ -6,7 +6,9 @@ import {
 import { useSuspenseQuery } from "@tanstack/react-query";
 import ClassCard from "@/components/teacher/class-card";
 import CreateClassModal from "@/components/teacher/create-class-modal";
-import { Input } from "@/components/ui/input";
+import { colleges } from "@/config/colleges";
+import { classroomQueries } from "@/features/classroom/queries";
+import { Input } from "@/ui/input";
 import {
 	Select,
 	SelectItem,
@@ -18,9 +20,7 @@ import {
 	SelectPositioner,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
-import { colleges } from "@/config/colleges";
-import { classroomQueries } from "@/features/classroom/queries";
+} from "@/ui/select";
 
 export default function TeacherClassrooms() {
 	const { data } = useSuspenseQuery(classroomQueries.list());

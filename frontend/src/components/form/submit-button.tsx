@@ -1,5 +1,5 @@
 import { useFormContext } from "@/lib/form";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 
 export function SubmitButton({ children }: { children: React.ReactNode }) {
 	const form = useFormContext();

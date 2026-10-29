@@ -1,11 +1,11 @@
 import { EyeClosedIcon, EyeIcon } from "@solar-icons/react/linear";
 import { useState } from "react";
-import { ActionIcon } from "@/components/ui/action-icon";
-import { Button } from "@/components/ui/button";
-import { Checkbox, CheckboxIndicator } from "@/components/ui/checkbox";
-import { Field, FieldControl, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { useSignInMutation } from "@/lib/mutations/auth.mutation";
+import { ActionIcon } from "@/ui/action-icon";
+import { Button } from "@/ui/button";
+import { Checkbox, CheckboxIndicator } from "@/ui/checkbox";
+import { Field, FieldControl, FieldLabel } from "@/ui/field";
+import { Input } from "@/ui/input";
 
 export default function Signin() {
 	const [viewPass, setViewPass] = useState(false);

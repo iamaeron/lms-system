@@ -1,5 +1,6 @@
 // import {  } from "@solar-icons/react/bold";
 
+import { Toast } from "@base-ui/react";
 import {
 	BellIcon,
 	Dialog2Icon,
@@ -13,9 +14,14 @@ import {
 	PanelRightOpenIcon,
 } from "@solar-icons/react/linear";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { cn } from "cn";
 import { useNavigate } from "react-router";
-import { ActionIcon } from "@/components/ui/action-icon";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { sidebarNavigation } from "@/config/nav-links";
+import { toastRoot, toneOf } from "@/config/toast";
+import { authClient } from "@/lib/auth-client";
+import { sessionQueryOptions } from "@/lib/session";
+import { ActionIcon } from "@/ui/action-icon";
+import { Avatar, AvatarFallback } from "@/ui/avatar";
 import {
 	Menu,
 	MenuItem,
@@ -24,13 +30,11 @@ import {
 	MenuPositioner,
 	MenuSeparator,
 	MenuTrigger,
-} from "@/components/ui/menu";
-import { sidebarNavigation } from "@/config/nav-links";
-import { authClient } from "@/lib/auth-client";
-import { sessionQueryOptions } from "@/lib/session";
+} from "@/ui/menu";
 import NavItem from "./nav-item";
 
 const Sidebar = () => {
+	const { toasts } = Toast.useToastManager();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 
@@ -45,7 +49,7 @@ const Sidebar = () => {
 
 	return (
 		// <div className="w-76 p-2 flex">
-		<aside className="flex flex-col w-70 border border-zinc-200 bg-zinc-100">
+		<aside className="relative flex w-70 flex-col overflow-hidden border border-zinc-200 bg-zinc-100">
 			<header className="flex items-center justify-between pl-3 pt-4 pr-2">
 				<div className="flex items-center gap-3 px-0.5">
 					<div className="flex items-center gap-2">
@@ -177,11 +181,35 @@ const Sidebar = () => {
 				</div>
 			)}
 			{/* <hr className="border-t border-zinc-200" /> */}
-			<div className="p-3">
-				<div className="p-1.5 rounded-md border border-black/5 shadow-sm shadow-black/2 bg-zinc-50 text-sm text-zinc-700">
+			{toasts.map((item) => (
+				<Toast.Root
+					key={item.id}
+					toast={item}
+					className={cn(toastRoot({ tone: toneOf(item.type) }))}
+				>
+					<Toast.Content
+						className={cn(
+							"flex items-start justify-between gap-3 transition-opacity duration-200",
+							"data-behind:opacity-0 data-behind:data-expanded:opacity-100",
+						)}
+					>
+						<div className="min-w-0">
+							<Toast.Title className="text-sm font-medium text-zinc-900" />
+							<Toast.Description className="text-sm text-zinc-500" />
+						</div>
+						<Toast.Close
+							aria-label="Dismiss"
+							className="size-6 shrink-0 rounded-md leading-none text-zinc-500 hover:bg-zinc-100"
+						>
+							×
+						</Toast.Close>
+					</Toast.Content>
+				</Toast.Root>
+			))}
+			{/* <div className="p-1.5 rounded-md border border-black/5 shadow-sm shadow-black/2 bg-zinc-50 text-sm text-zinc-700">
 					Notification
-				</div>
-				{/*<button
+				</div> */}
+			{/*<button
           type="button"
           onClick={handleSignOut}
           className="flex gap-3 items-center font-medium text-sm text-muted-foreground px-2.5 py-1.5 hover:bg-zinc-200 rounded-lg w-full hover:text-zinc-700"
@@ -189,7 +217,6 @@ const Sidebar = () => {
           <LogoutIcon strokeWidth={2} size={20} className="shrink-0" />
           <span>Log out</span>
         </button>*/}
-			</div>
 		</aside>
 		// </div>
 	);

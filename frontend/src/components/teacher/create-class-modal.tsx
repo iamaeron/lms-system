@@ -1,12 +1,11 @@
-import {
-	AddIcon,
-	AltArrowDownIcon,
-	CheckIcon,
-	CloseIcon,
-} from "@solar-icons/react/linear";
-import { useState } from "react";
-import { ActionIcon } from "@/components/ui/action-icon";
-import { Button } from "@/components/ui/button";
+import { createClassroomSchema } from "@shared/schema/classroom.schema";
+import { AddIcon, CloseIcon } from "@solar-icons/react/linear";
+import { useMutation } from "@tanstack/react-query";
+import { colleges } from "@/config/colleges";
+import { classroomMutations } from "@/features/classroom/mutations";
+import { useAppForm } from "@/lib/form";
+import { ActionIcon } from "@/ui/action-icon";
+import { Button } from "@/ui/button";
 import {
 	Dialog,
 	DialogBackdrop,
@@ -16,26 +15,32 @@ import {
 	DialogPortal,
 	DialogTitle,
 	DialogTrigger,
-} from "@/components/ui/dialog";
-import { Field, FieldControl, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectItem,
-	SelectItemIndicator,
-	SelectItemText,
-	SelectList,
-	SelectPopup,
-	SelectPortal,
-	SelectPositioner,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { colleges } from "@/config/colleges";
+} from "@/ui/dialog";
+
+const gradeOptions = Array.from({ length: 12 }, (_, index) => {
+	const value = String(index + 1);
+	return { label: value, value };
+});
 
 const CreateClassModal = () => {
-	const [section, setSection] = useState("");
+	const createClass = useMutation({
+		mutationFn: classroomMutations.create,
+	});
+
+	const form = useAppForm({
+		defaultValues: {
+			name: "",
+			subjectCode: "A",
+			departmentId: "1",
+			gradeLevel: 1,
+			section: "",
+			description: "",
+		},
+		validators: {
+			onSubmit: createClassroomSchema.required(),
+		},
+		onSubmit: async ({ value }) => createClass.mutateAsync(value),
+	});
 
 	return (
 		<Dialog>
@@ -46,144 +51,108 @@ const CreateClassModal = () => {
 
 			<DialogPortal>
 				<DialogBackdrop />
-
 				<DialogPopup>
-					<div className="border-b border-zinc-100 mb-4">
+					<div className="mb-4 border-b border-zinc-100">
 						<DialogTitle>Create a new class</DialogTitle>
 					</div>
 
-					<div className="space-y-5">
-						<Field required>
-							<FieldLabel>Name</FieldLabel>
-							<FieldControl
-								placeholder="Introduction to Programming"
-								render={<Input />}
-							/>
-						</Field>
-
-						<Field>
-							<FieldLabel>Subject Code</FieldLabel>
-							<FieldControl placeholder="ITP" render={<Input />} />
-						</Field>
-
-						<Field>
-							<FieldLabel>Grade & Section</FieldLabel>
-							<div className="flex gap-2">
-								<Select
-									modal={false}
-									defaultValue="ccis"
-									items={colleges.map((college) => ({
-										label: college.code,
-										value: college.code.toLowerCase(),
-									}))}
-								>
-									<SelectTrigger className="min-w-0 flex-1">
-										<SelectValue />
-										<AltArrowDownIcon strokeWidth={2} size={16} />
-									</SelectTrigger>
-
-									<SelectPortal>
-										<SelectPositioner
-											align="start"
-											// alignItemWithTrigger={false}
-										>
-											<SelectPopup className="min-w-30">
-												<SelectList>
-													{colleges
-														.map((college) => ({
-															label: college.code,
-															value: college.code.toLowerCase(),
-														}))
-														.map((option) => (
-															<SelectItem
-																key={option.value}
-																value={option.value}
-															>
-																<SelectItemText>{option.label}</SelectItemText>
-																<SelectItemIndicator>
-																	<CheckIcon strokeWidth={2} size={16} />
-																</SelectItemIndicator>
-															</SelectItem>
-														))}
-												</SelectList>
-											</SelectPopup>
-										</SelectPositioner>
-									</SelectPortal>
-								</Select>
-
-								<Select
-									modal={false}
-									defaultValue="1"
-									items={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((v) => ({
-										label: v,
-										value: v,
-									}))}
-								>
-									<SelectTrigger className="min-w-0 w-15">
-										<SelectValue />
-										<AltArrowDownIcon strokeWidth={2} size={16} />
-									</SelectTrigger>
-
-									<SelectPortal>
-										<SelectPositioner
-											align="start"
-											// alignItemWithTrigger={false}
-										>
-											<SelectPopup className="min-w-15">
-												<SelectList>
-													{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-														.map((v) => ({ label: v, value: v }))
-														.map((option) => (
-															<SelectItem
-																key={option.value}
-																value={option.value}
-															>
-																<SelectItemText>{option.label}</SelectItemText>
-																<SelectItemIndicator>
-																	<CheckIcon strokeWidth={2} size={16} />
-																</SelectItemIndicator>
-															</SelectItem>
-														))}
-												</SelectList>
-											</SelectPopup>
-										</SelectPositioner>
-									</SelectPortal>
-								</Select>
-
-								<Field>
-									<FieldControl
-										value={section}
-										onValueChange={(value) =>
-											setSection(
-												value
-													.replace(/[^a-zA-Z]/g, "")
-													.toUpperCase()
-													.slice(0, 1),
-											)
-										}
-										autoComplete="off"
-										render={<Input className="w-15 uppercase" />}
+					<form
+						onSubmit={(event) => {
+							event.preventDefault();
+							event.stopPropagation();
+							form.handleSubmit();
+						}}
+					>
+						<div className="space-y-5">
+							<form.AppField name="name">
+								{(field) => (
+									<field.TextField
+										label="Name"
+										required
+										placeholder="Introduction to Programming"
 									/>
-								</Field>
+								)}
+							</form.AppField>
+
+							<form.AppField name="subjectCode">
+								{(field) => (
+									<field.TextField label="Subject Code" placeholder="ITP" />
+								)}
+							</form.AppField>
+
+							<div className="space-y-2">
+								{/* <p className="text-sm font-medium">Grade &amp; Section</p> */}
+								<div className="flex gap-2">
+									<div className="min-w-0 flex-1">
+										<form.AppField name="departmentId">
+											{(field) => (
+												<field.SelectField
+													label="College"
+													options={colleges.map((college) => ({
+														label: college.code,
+														value: college.code.toLowerCase(),
+													}))}
+												/>
+											)}
+										</form.AppField>
+									</div>
+									<div className="w-15 shrink-0">
+										<form.AppField name="gradeLevel">
+											{(field) => (
+												<field.SelectField
+													label="Grade"
+													options={gradeOptions}
+												/>
+											)}
+										</form.AppField>
+									</div>
+									<div className="w-15 shrink-0">
+										<form.AppField name="section">
+											{(field) => (
+												<field.TextField
+													label="Section"
+													autoComplete="off"
+													format={(value) =>
+														value
+															.replace(/[^a-zA-Z]/g, "")
+															.toUpperCase()
+															.slice(0, 1)
+													}
+													className="uppercase"
+												/>
+											)}
+										</form.AppField>
+									</div>
+								</div>
+
+								<Button variant="flat" className="w-full">
+									<AddIcon size={16} />
+									Add another class
+								</Button>
 							</div>
-						</Field>
 
-						<Field>
-							<FieldLabel>Description</FieldLabel>
-							<FieldControl
-								placeholder="A stressful class ..."
-								render={<Textarea />}
-							/>
-						</Field>
-					</div>
+							<form.AppField name="description">
+								{(field) => (
+									<field.TextareaField
+										label="Description"
+										placeholder="A stressful class ..."
+									/>
+								)}
+							</form.AppField>
+						</div>
 
-					<DialogFooter>
-						<DialogClose render={<Button variant="flat" />}>Cancel</DialogClose>
-						<Button>Create</Button>
-					</DialogFooter>
+						<DialogFooter>
+							<DialogClose render={<Button variant="flat" type="button" />}>
+								Cancel
+							</DialogClose>
+							<form.AppForm>
+								<form.SubmitButton>Create</form.SubmitButton>
+							</form.AppForm>
+						</DialogFooter>
+					</form>
 
 					<DialogClose
-						className="right-3 top-3 absolute"
+						className="absolute right-3 top-3"
 						render={<ActionIcon variant="flat" />}
 					>
 						<CloseIcon size={16} strokeWidth={2} />
