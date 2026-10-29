@@ -102,9 +102,6 @@ const Sidebar = () => {
 					<MenuPortal>
 						<MenuPositioner sideOffset={6}>
 							<MenuPopup className="w-(--anchor-width)">
-								<div className="px-3 pb-1.5 text-muted-foreground text-sm">
-									{user?.name}
-								</div>
 								<MenuItem className="pl-2">
 									<UserIcon
 										strokeWidth={2}
@@ -129,7 +126,6 @@ const Sidebar = () => {
 									/>
 									<span>Messages</span>
 								</MenuItem>
-								<MenuSeparator />
 								<MenuItem className="pl-2">
 									<SettingsMinimalisticIcon
 										strokeWidth={2}
@@ -138,6 +134,7 @@ const Sidebar = () => {
 									/>
 									<span>Settings</span>
 								</MenuItem>
+								<MenuSeparator />
 								{/* <MenuSeparator /> */}
 								<MenuItem onClick={handleSignOut} className="pl-2">
 									<LogoutIcon

@@ -240,7 +240,7 @@ export const classroom = pgTable(
 			.references(() => user.id, { onDelete: "restrict" }),
 		name: text("name").notNull(), // e.g. "Algebra I"
 		section: text("section"), // e.g. "CCIS 1-A"
-		subject: text("subject"), // e.g. "Mathematics"
+		subjectCode: text("subject_code"),
 		gradeLevel: integer("grade_level"),
 		departmentId: text("department_id").references(() => department.id, {
 			onDelete: "set null",

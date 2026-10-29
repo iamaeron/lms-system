@@ -21,6 +21,14 @@ export const createClassroomSchema = z.object({
 	gradeLevel: z.number().int().min(1).max(20).optional(),
 	description: z.string().trim().max(1000).optional(),
 	departmentId: z.string().min(1).optional(),
+	subjectCode: z
+		.string()
+		.trim()
+		.toUpperCase()
+		.max(12)
+		.regex(/^[A-Z0-9-]*$/, "Letters, numbers and dashes only")
+		.transform((v) => v || undefined) // "" means not provided
+		.optional(),
 });
 
 export const updateClassroomSchema = createClassroomSchema

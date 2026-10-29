@@ -11,8 +11,9 @@
 		"jsx": "react-jsx",
 		"jsxImportSource": "hono/jsx",
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*"],
+			"@shared/*": ["../common/*"]
 		}
 	},
-	"include": ["src/**/*", "../frontend/src/lib/api.ts"]
+	"include": ["src/**/*", "../frontend/src/lib/api.ts", "../common/schema"]
 }

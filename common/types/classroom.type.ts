@@ -12,7 +12,7 @@ export interface ClassroomResponse {
 	id: string;
 	name: string;
 	section: string | null;
-	subject: string | null;
+	subjectCode: string | null;
 	gradeLevel: number | null;
 	description: string | null;
 	joinCode: string;

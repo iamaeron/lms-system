@@ -1,13 +1,13 @@
+import type {
+	CreateClassroomInput,
+	UpdateClassroomInput,
+} from "@shared/schema/classroom.schema";
 import { and, eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import { db } from "@/db";
 import { classroom, classroomMember, generateJoinCode } from "@/db/schema";
 import type { Membership } from "@/lib/env";
 import { isUniqueViolation } from "@/lib/errors";
-import type {
-	CreateClassroomInput,
-	UpdateClassroomInput,
-} from "@/schema/classroom.schema";
 
 type Role = Membership["role"];
 type Classroom = typeof classroom.$inferSelect;

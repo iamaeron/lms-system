@@ -1,7 +1,3 @@
-import { factory } from "@/lib/env";
-import { validate } from "@/lib/validate";
-import { requireAuth, requireRole } from "@/middlewares/auth.middleware";
-import { requireClassroomMember } from "@/middlewares/classroom.middleware";
 import {
 	classroomParam,
 	createClassroomSchema,
@@ -9,7 +5,11 @@ import {
 	listQuery,
 	memberParam,
 	updateClassroomSchema,
-} from "@/schema/classroom.schema";
+} from "@shared/schema/classroom.schema";
+import { factory } from "@/lib/env";
+import { validate } from "@/lib/validate";
+import { requireAuth, requireRole } from "@/middlewares/auth.middleware";
+import { requireClassroomMember } from "@/middlewares/classroom.middleware";
 import { classroomService } from "@/services/classroom.service";
 
 const teacherOnly = requireClassroomMember({ roles: ["teacher"] });

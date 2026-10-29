@@ -182,7 +182,7 @@ async function seed() {
 			})
 			.returning();
 
-		const [lessonWhatIsIt, lessonHardware, lessonQuiz] = await db
+		const [lessonWhatIsIt, _lessonHardware, lessonQuiz] = await db
 			.insert(lesson)
 			.values([
 				{
@@ -273,7 +273,7 @@ async function seed() {
 				ownerId: teacher.id,
 				name: "Introduction to Computing",
 				section: "A",
-				subject: "Computing",
+				subjectCode: "ITC",
 				gradeLevel: 1,
 				departmentId: departmentIdByCode.CCIS,
 			})
