@@ -24,7 +24,7 @@ function SelectTrigger({ className, ...props }: SelectTriggerProps) {
 	return (
 		<BaseSelect.Trigger
 			className={cn(
-				"flex min-w-44 items-center justify-between gap-2 px-3 py-1.5 text-sm text-zinc-700 bg-white rounded-lg shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_1px_0_0_rgba(0,0,0,0.07),0_6px_10px_0_rgba(0,0,0,0.05)] relative",
+				"flex min-w-44 items-center justify-between gap-2 px-3 py-1.5 text-sm text-zinc-700 bg-zinc-50 rounded-lg shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_1px_0_0_rgba(0,0,0,0.03),0_2px_4px_0_rgba(0,0,0,0.08),inset_0_1px_0_0_rgba(255,255,255,1)] relative",
 				"transition-colors outline-none data-disabled:cursor-not-allowed data-disabled:opacity-50 data-pressed:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-400/70 focus-visible:ring-offset-2",
 				className,
 			)}
@@ -90,8 +90,6 @@ function SelectPopup({ className, ...props }: SelectPopupProps) {
 				"data-starting-style:scale-[0.98] data-starting-style:opacity-0",
 				"data-ending-style:scale-[0.98] data-ending-style:opacity-0",
 				"motion-reduce:transition-none",
-				// keep only the width tweak for aligned mode
-				"data-[side=none]:min-w-[calc(var(--anchor-width)+1rem)]",
 				className,
 			)}
 			{...props}

@@ -10,7 +10,7 @@ interface ClassCardProps {
 
 const ClassCard = ({ detail }: ClassCardProps) => {
 	return (
-		<div className="border border-zinc-200 p-0.5 rounded-lg">
+		<div className="bg-white p-0.5 rounded-lg">
 			<div className="shadow-xl shadow-black/3 h-22 w-full bg-linear-to-br rounded-md from-teal-300 to-blue-300 font-serif italic flex flex-col text-2xl justify-end p-3 text-black/50">
 				<h3>{detail.classroom.subjectCode}</h3>
 			</div>
@@ -41,7 +41,6 @@ const ClassCard = ({ detail }: ClassCardProps) => {
 						{detail.classroom.memberCount > 1 && "s"}
 					</p>
 				</div>
-				<p>{detail.classroom.description}</p>
 			</div>
 		</div>
 	);

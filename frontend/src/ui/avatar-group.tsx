@@ -17,7 +17,7 @@ function AvatarGroup({ children, max, className, ...props }: AvatarGroupProps) {
 				<div
 					style={{ "--z": visible.length - index } as React.CSSProperties}
 					className={cn(
-						"relative border-4 border-white rounded-full transition-all duration-150 z-(--z) hover:z-30 hover:scale-105",
+						"relative h-max w-max border-4 border-white rounded-full transition-all duration-150 z-(--z) hover:z-30 hover:scale-105",
 						index !== 0 && "-ml-3",
 					)}
 				>

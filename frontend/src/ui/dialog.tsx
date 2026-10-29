@@ -45,7 +45,7 @@ function DialogPopup({ className, ...props }: DialogPopupProps) {
 	return (
 		<BaseDialog.Popup
 			className={cn(
-				"w-100 bg-white z-50 max-w-[calc(100vw-3rem)] fixed top-1/2 left-1/2 -mt-8 -translate-x-1/2 -translate-y-1/2 transition-[scale,opacity] duration-100 ease-out data-ending-style:scale-[0.98] data-ending-style:opacity-0 data-starting-style:scale-[0.98] data-starting-style:opacity-0 p-5 pt-3 rounded-lg shadow-xl shadow-black/5",
+				"w-100 bg-white z-50 max-w-[calc(100vw-3rem)] fixed top-1/2 left-1/2 -mt-8 -translate-x-1/2 -translate-y-1/2 transition-[scale,opacity] duration-100 ease-out data-ending-style:scale-[0.98] data-ending-style:opacity-0 data-starting-style:scale-[0.98] data-starting-style:opacity-0 p-5 rounded-lg shadow-xl shadow-black/5",
 				className,
 			)}
 			{...props}

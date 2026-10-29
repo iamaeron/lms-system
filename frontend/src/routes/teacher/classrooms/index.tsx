@@ -49,7 +49,7 @@ export default function TeacherClassrooms() {
 						{ label: "Active", value: "active" },
 					]}
 				>
-					<SelectTrigger className="min-w-0 shadow-none">
+					<SelectTrigger className="min-w-0 bg-transparent shadow-none">
 						<SelectValue />
 						<AltArrowDownIcon strokeWidth={2} size={16} />
 					</SelectTrigger>
@@ -91,7 +91,7 @@ export default function TeacherClassrooms() {
 						})),
 					]}
 				>
-					<SelectTrigger className="min-w-0 shadow-none">
+					<SelectTrigger className="min-w-0 bg-transparent shadow-none">
 						<SelectValue />
 						<AltArrowDownIcon strokeWidth={2} size={16} />
 					</SelectTrigger>
@@ -125,7 +125,7 @@ export default function TeacherClassrooms() {
 				</Select>
 			</div>
 
-			<div className="mt-2 grid grid-cols-3">
+			<div className="mt-2 grid grid-cols-3 gap-4">
 				{data.data.map((detail) => (
 					<ClassCard key={detail.classroom.id} detail={detail} />
 				))}

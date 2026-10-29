@@ -5,6 +5,7 @@ import { auth } from "./lib/auth";
 import { notFound, onError } from "./lib/errors";
 
 import { classroomRoutes } from "./routes/classroom.route";
+import { departmentRoutes } from "./routes/department.route";
 
 const app = new Hono();
 
@@ -36,6 +37,7 @@ app.use("*", async (c: Context, next) => {
 app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 
 app.route("/api", classroomRoutes);
+app.route("/api", departmentRoutes);
 
 serve(
 	{

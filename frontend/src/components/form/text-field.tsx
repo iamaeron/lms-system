@@ -6,11 +6,13 @@ export function TextField({
 	label,
 	required,
 	format,
+	hideLabel,
 	...props
 }: {
 	label: string;
 	required?: boolean;
 	format?: (value: string) => string; // e.g. the section-letter filter
+	hideLabel?: boolean;
 } & React.ComponentProps<typeof Input>) {
 	const field = useFieldContext<string>();
 	const { isTouched, isValid, errors } = field.state.meta;
@@ -18,7 +20,7 @@ export function TextField({
 
 	return (
 		<Field required={required} invalid={invalid} name={field.name}>
-			<FieldLabel>{label}</FieldLabel>
+			{!hideLabel && <FieldLabel>{label}</FieldLabel>}
 			<FieldControl
 				value={field.state.value}
 				onValueChange={(v) => field.handleChange(format ? format(v) : v)}

@@ -24,11 +24,15 @@ export function SelectField({
 	required,
 	options,
 	placeholder,
+	hideLabel,
+	popupClassName,
 }: {
 	label: string;
 	required?: boolean;
 	options: SelectOption[];
 	placeholder?: string;
+	hideLabel?: boolean;
+	popupClassName?: string;
 }) {
 	const field = useFieldContext<string>();
 	const { isTouched, isValid, errors } = field.state.meta;
@@ -46,7 +50,7 @@ export function SelectField({
 				}}
 				items={options}
 			>
-				<FieldLabel>{label}</FieldLabel>
+				{!hideLabel && <FieldLabel>{label}</FieldLabel>}
 				<FieldControl
 					render={
 						<SelectTrigger
@@ -61,7 +65,7 @@ export function SelectField({
 				/>
 				<SelectPortal>
 					<SelectPositioner>
-						<SelectPopup>
+						<SelectPopup className={popupClassName}>
 							<SelectList>
 								{options.map((option) => (
 									<SelectItem key={option.value} value={option.value}>
