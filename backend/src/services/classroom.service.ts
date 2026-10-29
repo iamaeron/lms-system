@@ -26,7 +26,30 @@ export const classroomService = {
 		const rows = await db.query.classroomMember.findMany({
 			where: { userId },
 			orderBy: { joinedAt: "desc" },
-			with: { classroom: { with: { owner: { columns: ownerColumns } } } },
+			with: {
+				classroom: {
+					with: {
+						owner: { columns: ownerColumns },
+						members: {
+							where: { role: "student" },
+							orderBy: { joinedAt: "asc" },
+							limit: 3,
+							columns: {},
+							with: { user: { columns: ownerColumns } },
+						},
+						department: true,
+					},
+					extras: {
+						memberCount: (table, { sql }) =>
+							sql<number>`(
+            select count(*)::int
+            from ${classroomMember}
+            where ${classroomMember.classroomId} = ${table.id}
+			and ${classroomMember.role} = 'student'
+          )`.mapWith(Number),
+					},
+				},
+			},
 		});
 
 		return rows.flatMap((row) =>

@@ -53,7 +53,7 @@ function MenuItem({ className, ...props }: MenuItemProps) {
 	return (
 		<BaseMenu.Item
 			className={cn(
-				"text-sm text-zinc-700 flex items-center px-3 has-[>svg]:pl-2 py-1 hover:bg-zinc-100 rounded-md cursor-default gap-2 data-disabled:opacity-50 data-disabled:pointer-events-none",
+				"text-sm text-zinc-700 flex items-center px-3 py-1 hover:bg-zinc-100 rounded-md cursor-default gap-2 data-disabled:opacity-50 data-disabled:pointer-events-none",
 				className,
 			)}
 			{...props}

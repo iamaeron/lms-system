@@ -20,6 +20,7 @@ export const createClassroomSchema = z.object({
 	subject: z.string().trim().max(100).optional(),
 	gradeLevel: z.number().int().min(1).max(20).optional(),
 	description: z.string().trim().max(1000).optional(),
+	departmentId: z.string().min(1).optional(),
 });
 
 export const updateClassroomSchema = createClassroomSchema

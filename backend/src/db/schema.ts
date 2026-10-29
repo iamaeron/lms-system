@@ -239,9 +239,12 @@ export const classroom = pgTable(
 			.notNull()
 			.references(() => user.id, { onDelete: "restrict" }),
 		name: text("name").notNull(), // e.g. "Algebra I"
-		section: text("section"), // e.g. "Period 3" / "Rizal"
+		section: text("section"), // e.g. "CCIS 1-A"
 		subject: text("subject"), // e.g. "Mathematics"
 		gradeLevel: integer("grade_level"),
+		departmentId: text("department_id").references(() => department.id, {
+			onDelete: "set null",
+		}),
 		description: text("description"),
 		joinCode: text("join_code")
 			.notNull()
@@ -251,7 +254,10 @@ export const classroom = pgTable(
 		archivedAt: timestamp("archived_at"),
 		...timestamps,
 	},
-	(t) => [index("classroom_owner_idx").on(t.ownerId)],
+	(t) => [
+		+index("classroom_owner_idx").on(t.ownerId),
+		+index("classroom_department_idx").on(t.departmentId),
+	],
 );
 
 // Membership. Role is per classroom, like Google Classroom.

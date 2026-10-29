@@ -105,7 +105,7 @@ const Sidebar = () => {
 								<div className="px-3 pb-1.5 text-muted-foreground text-sm">
 									{user?.name}
 								</div>
-								<MenuItem>
+								<MenuItem className="pl-2">
 									<UserIcon
 										strokeWidth={2}
 										size={20}
@@ -113,7 +113,7 @@ const Sidebar = () => {
 									/>
 									<span>Profile</span>
 								</MenuItem>
-								<MenuItem>
+								<MenuItem className="pl-2">
 									<BellIcon
 										strokeWidth={2}
 										size={20}
@@ -121,7 +121,7 @@ const Sidebar = () => {
 									/>
 									<span>Notifications</span>
 								</MenuItem>
-								<MenuItem>
+								<MenuItem className="pl-2">
 									<Dialog2Icon
 										strokeWidth={2}
 										size={20}
@@ -130,7 +130,7 @@ const Sidebar = () => {
 									<span>Messages</span>
 								</MenuItem>
 								<MenuSeparator />
-								<MenuItem>
+								<MenuItem className="pl-2">
 									<SettingsMinimalisticIcon
 										strokeWidth={2}
 										size={20}
@@ -139,7 +139,7 @@ const Sidebar = () => {
 									<span>Settings</span>
 								</MenuItem>
 								{/* <MenuSeparator /> */}
-								<MenuItem onClick={handleSignOut}>
+								<MenuItem onClick={handleSignOut} className="pl-2">
 									<LogoutIcon
 										strokeWidth={2}
 										size={20}

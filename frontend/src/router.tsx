@@ -16,15 +16,13 @@ import { protectedLoader, publicOnlyLoader } from "./lib/protected-loader";
 // };
 //
 
-const lazyImport = (route: string) =>
-	import(route).then((m) => ({ Component: m.default }));
-
 export function createRouter(queryClient: QueryClient) {
 	return createBrowserRouter([
 		{
 			path: paths.login.path,
 			loader: publicOnlyLoader(queryClient),
-			lazy: () => lazyImport("./routes/login"),
+			lazy: () =>
+				import("./routes/login").then((m) => ({ Component: m.default })),
 		},
 		{
 			path: "/portal",
@@ -42,31 +40,46 @@ export function createRouter(queryClient: QueryClient) {
 					children: [
 						{
 							index: true,
-							handle: { title: "Student Dashboard" },
-							lazy: () => lazyImport("./routes/student/home"),
+							handle: { title: "Home" },
+							lazy: () =>
+								import("./routes/student/home").then((m) => ({
+									Component: m.default,
+								})),
 						},
 					],
 				},
 				{
 					path: "teacher",
 					loader: requireRole(queryClient, "teacher"),
-					lazy: () => lazyImport("./layouts/app-layout"),
+					lazy: () =>
+						import("./layouts/app-layout").then((m) => ({
+							Component: m.default,
+						})),
 					children: [
 						{
 							index: true,
 							handle: { title: "Home" },
-							lazy: () => lazyImport("./routes/teacher/home"),
+							lazy: () =>
+								import("./routes/teacher/home").then((m) => ({
+									Component: m.default,
+								})),
 						},
 						{
 							path: paths.portal.teacher.classrooms.path,
 							loader: () => queryClient.query(classroomQueries.list()),
 							handle: { title: "Classrooms" },
-							lazy: () => lazyImport("./routes/teacher/classrooms"),
+							lazy: () =>
+								import("./routes/teacher/classrooms").then((m) => ({
+									Component: m.default,
+								})),
 						},
 						{
 							path: paths.portal.teacher.courses.path,
 							handle: { title: "Course Library" },
-							lazy: () => lazyImport("./routes/teacher/courses"),
+							lazy: () =>
+								import("./routes/teacher/courses").then((m) => ({
+									Component: m.default,
+								})),
 						},
 					],
 				},

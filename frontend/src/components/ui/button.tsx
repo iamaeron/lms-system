@@ -15,7 +15,7 @@ const button = cva(
 					"bg-background text-zinc-600 shadow-[0_0_0_1px_rgba(0,0,0,0.07),0_1px_0_0_rgba(0,0,0,0.05),0_2px_4px_0_rgba(0,0,0,0.08)] hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
 				ghost:
 					"hover:bg-accent text-zinc-600 hover:text-accent-foreground dark:hover:bg-accent/50",
-				flat: "bg-zinc-100 hover:bg-zinc-200 text-zinc-600 shadow-[0_0_0_1px] shadow-zinc-100 hover:shadow-zinc-200 hover:text-accent-foreground dark:hover:bg-accent/50",
+				flat: "bg-zinc-100 hover:bg-zinc-200 text-zinc-600 shadow-zinc-100 hover:shadow-zinc-200 hover:text-accent-foreground dark:hover:bg-accent/50",
 				link: "text-primary underline-offset-4 hover:underline",
 			},
 			size: {
@@ -83,7 +83,7 @@ export function Button({
 			<span
 				data-content
 				className={cn(
-					"inline-flex items-center justify-center gap-2",
+					"inline-flex items-center justify-center gap-1.5",
 					loading && "invisible",
 				)}
 			>

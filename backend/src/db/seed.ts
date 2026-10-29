@@ -4,7 +4,6 @@ import { nanoid } from "nanoid";
 import { db } from "./index";
 import {
 	account,
-	category,
 	classroom,
 	classroomMember,
 	course,
@@ -26,81 +25,16 @@ import {
 const DAY = 24 * 60 * 60 * 1000;
 
 // Systems Plus College Foundation (Balibago, Angeles City)
-// Source: spcf.edu.ph/academics. "College of Education" has no page of its own
-// on the site; its programs (BEEd, BSEd) are listed under CASS.
+// Source: spcf.edu.ph/academics. Only code + name per college for now:
+// degree programs aren't modelled because a section can mix specializations.
 const colleges = [
-	{
-		code: "CASS",
-		name: "College of Arts and Social Sciences and Education",
-		programs: [
-			{ slug: "bee", title: "Bachelor of Elementary Education" },
-			{ slug: "bse", title: "Bachelor of Secondary Education" },
-			{ slug: "abcom", title: "Bachelor of Arts in Communication" },
-			{ slug: "bssw", title: "Bachelor of Science in Social Work" },
-		],
-	},
-	{
-		code: "COB",
-		name: "College of Business",
-		programs: [
-			{ slug: "bsa", title: "Bachelor of Science in Accountancy" },
-			{
-				slug: "bsba",
-				title: "Bachelor of Science in Business Administration",
-			},
-			{
-				slug: "bsca",
-				title: "Bachelor of Science in Customs Administration",
-			},
-			{
-				slug: "bsrem",
-				title: "Bachelor of Science in Real Estate Management",
-			},
-		],
-	},
-	{
-		code: "CCIS",
-		name: "College of Computing and Information Sciences",
-		programs: [
-			{ slug: "bscs", title: "Bachelor of Science in Computer Science" },
-			{ slug: "bsit", title: "Bachelor of Science in Information Technology" },
-			{ slug: "bsis", title: "Bachelor of Science in Information Systems" },
-			{
-				slug: "bsemc",
-				title: "Bachelor of Science in Entertainment and Multimedia Computing",
-			},
-		],
-	},
-	{
-		code: "COC",
-		name: "College of Criminology",
-		programs: [{ slug: "bsc", title: "Bachelor of Science in Criminology" }],
-	},
-	{
-		code: "COE",
-		name: "College of Engineering",
-		programs: [
-			{ slug: "bscpe", title: "Bachelor of Science in Computer Engineering" },
-			{
-				slug: "bsece",
-				title:
-					"Bachelor of Science in Electronics and Communications Engineering",
-			},
-		],
-	},
-	{
-		code: "CHM",
-		name: "College of Hospitality Management",
-		programs: [
-			{ slug: "bstm", title: "Bachelor of Science in Tourism" },
-			{ slug: "bshm", title: "Bachelor of Science in Hospitality Management" },
-		],
-	},
-	{
-		code: "CON",
-		name: "College of Nursing",
-		programs: [{ slug: "bsn", title: "Bachelor of Science in Nursing" }],
-	},
+	{ code: "CASS", name: "College of Arts and Social Sciences and Education" },
+	{ code: "COB", name: "College of Business" },
+	{ code: "CCIS", name: "College of Computing and Information Sciences" },
+	{ code: "COC", name: "College of Criminology" },
+	{ code: "COE", name: "College of Engineering" },
+	{ code: "CHM", name: "College of Hospitality Management" },
+	{ code: "CON", name: "College of Nursing" },
 ];
 
 async function resetDatabase() {
@@ -157,7 +91,7 @@ async function seed() {
 				role: "teacher" as const,
 			},
 			{
-				name: "Aeron Sencil",
+				name: "John Aeron Sencil",
 				email: "student@example.com",
 				role: "student" as const,
 			},
@@ -202,64 +136,53 @@ async function seed() {
 		const teacher = users.teacher;
 		const student = users.student;
 
-		// ---------- category ----------
-		const [degreeCategory] = await db
-			.insert(category)
-			.values({ name: "Degree Programs", slug: "degree-programs" })
-			.returning();
+		// ---------- departments ----------
+		console.log("🏫 Seeding SPCF colleges as departments...");
 
-		// ---------- departments + courses ----------
-		console.log("🏫 Seeding SPCF colleges and degree programs...");
-
-		const courseIdBySlug: Record<string, string> = {};
+		const departmentIdByCode: Record<string, string> = {};
 		const now = new Date();
 
 		for (const college of colleges) {
 			const [dept] = await db
 				.insert(department)
-				.values({ name: college.name, code: college.code })
+				.values({ code: college.code, name: college.name })
 				.returning();
 
-			for (const program of college.programs) {
-				const [created] = await db
-					.insert(course)
-					.values({
-						title: program.title,
-						slug: program.slug,
-						summary: `${program.title} offered by the ${college.name}.`,
-						level: "major",
-						status: "published",
-						publishedAt: now,
-						instructorId: teacher.id,
-						departmentId: dept.id,
-						categoryId: degreeCategory.id,
-					})
-					.returning();
-
-				courseIdBySlug[program.slug] = created.id;
-			}
-
-			console.log(
-				`✅ ${college.code}: ${college.programs.length} program(s) created`,
-			);
+			departmentIdByCode[college.code] = dept.id;
+			console.log(`✅ ${college.code} - ${college.name}`);
 		}
 
-		// ---------- sample course content (BSIT) ----------
-		// Placeholder content for demo purposes, not the official curriculum.
-		console.log("📚 Seeding sample content for BSIT...");
+		// ---------- sample course content ----------
+		// Placeholder content for demo purposes. A course is reusable subject
+		// content, not a degree program.
+		console.log("📚 Seeding a sample course...");
 
-		const bsitId = courseIdBySlug.bsit;
+		const [introCourse] = await db
+			.insert(course)
+			.values({
+				title: "Introduction to Computing",
+				slug: "introduction-to-computing",
+				summary: "Basic concepts of computers and information technology.",
+				level: "major",
+				status: "published",
+				publishedAt: now,
+				instructorId: teacher.id,
+				departmentId: departmentIdByCode.CCIS,
+			})
+			.returning();
+
+		const introCourseId = introCourse.id;
 
 		const [module1] = await db
 			.insert(section)
 			.values({
-				courseId: bsitId,
+				courseId: introCourseId,
 				title: "Module 1: Introduction to Computing",
 				position: 1,
 			})
 			.returning();
 
-		const [lessonWhatIsIt, _lessonHardware, lessonQuiz] = await db
+		const [lessonWhatIsIt, lessonHardware, lessonQuiz] = await db
 			.insert(lesson)
 			.values([
 				{
@@ -349,8 +272,10 @@ async function seed() {
 			.values({
 				ownerId: teacher.id,
 				name: "Introduction to Computing",
-				section: "BSIT 1-A",
-				subject: "Information Technology",
+				section: "A",
+				subject: "Computing",
+				gradeLevel: 1,
+				departmentId: departmentIdByCode.CCIS,
 			})
 			.returning();
 
@@ -372,7 +297,7 @@ async function seed() {
 					classroomId: room.id,
 					authorId: teacher.id,
 					type: "announcement",
-					body: "Welcome to BSIT 1-A! Check the Classwork tab for this week's materials.",
+					body: "Welcome to CCIS 1-A! Check the Classwork tab for this week's materials.",
 					status: "published",
 					publishedAt: now,
 				},
@@ -414,12 +339,12 @@ async function seed() {
 			quizId: moduleQuiz.id,
 		});
 
-		// the material post shares the whole BSIT course plus one lesson
+		// the material post shares the whole sample course plus one lesson
 		await db.insert(postAttachment).values([
 			{
 				postId: material.id,
 				kind: "course",
-				courseId: bsitId,
+				courseId: introCourseId,
 				position: 0,
 			},
 			{

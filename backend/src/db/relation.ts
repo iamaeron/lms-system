@@ -39,6 +39,7 @@ export const relations = defineRelations(schema, (r) => ({
 	},
 	department: {
 		courses: r.many.course(),
+		classrooms: r.many.classroom(),
 	},
 
 	// ---------- course library ----------
@@ -67,6 +68,10 @@ export const relations = defineRelations(schema, (r) => ({
 	// ---------- classrooms ----------
 	classroom: {
 		owner: r.one.user({ from: r.classroom.ownerId, to: r.user.id }),
+		department: r.one.department({
+			from: r.classroom.departmentId,
+			to: r.department.id,
+		}),
 		members: r.many.classroomMember(),
 		topics: r.many.topic(),
 		posts: r.many.post(),

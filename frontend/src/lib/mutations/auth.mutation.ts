@@ -31,7 +31,7 @@ export function useSignInMutation() {
 		},
 		onSuccess: (data) => {
 			queryClient.invalidateQueries({ queryKey: ["session"] });
-			navigate(`/portal/${data.user.role}/`);
+			navigate(`/portal/${data.user.role}`);
 		},
 		onError: (error: Error) => {
 			console.error("Sign up failed:", error.message);

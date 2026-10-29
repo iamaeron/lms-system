@@ -18,6 +18,7 @@ export interface ClassroomResponse {
 	joinCode: string;
 	joinEnabled: boolean;
 	archivedAt: Date | null;
+	memberCount: number;
 	createdAt: Date;
 	updatedAt: Date;
 	ownerId: string;
@@ -26,6 +27,19 @@ export interface ClassroomResponse {
 		name: string | null;
 		image: string | null;
 	};
+	members?: Array<{
+		user: {
+			id: string;
+			name: string | null;
+			image: string | null;
+		};
+	}>;
+	department: {
+		id: string;
+		name: string;
+		description: string | null;
+		code: string | null;
+	} | null;
 }
 
 export type ClassroomListResponse = ApiResponse<ClassroomMember[]>;
