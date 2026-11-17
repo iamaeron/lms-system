@@ -41,7 +41,7 @@ const CreateClassModal = () => {
 	const form = useAppForm({
 		defaultValues: {
 			name: "",
-			subjectCode: "A",
+			subjectCode: "",
 			departmentId0: "",
 			gradeLevel0: "1",
 			section0: "",
@@ -65,6 +65,9 @@ const CreateClassModal = () => {
 				),
 			);
 			await queryClient.invalidateQueries({ queryKey: ["classrooms", "list"] });
+			await queryClient.invalidateQueries({
+				queryKey: ["notifications", "list"],
+			});
 			form.reset();
 			setClassRows([0]);
 		},
@@ -114,7 +117,11 @@ const CreateClassModal = () => {
 
 							<form.AppField name="subjectCode">
 								{(field) => (
-									<field.TextField label="Subject Code" placeholder="ITP" />
+									<field.TextField
+										label="Subject Code"
+										placeholder="ITP"
+										format={(val) => val.toUpperCase()}
+									/>
 								)}
 							</form.AppField>
 

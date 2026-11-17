@@ -281,6 +281,21 @@ export const classroomMember = pgTable(
 	],
 );
 
+export const notification = pgTable(
+	"notification",
+	{
+		id: id(),
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		title: text("title").notNull(),
+		description: text("description"),
+		readAt: timestamp("read_at"),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+	},
+	(table) => [index("notification_user_created_idx").on(table.userId, table.createdAt)],
+);
+
 // Topics group classwork ("Week 1", "Module 2", "Quizzes")
 export const topic = pgTable(
 	"topic",

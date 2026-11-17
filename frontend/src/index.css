@@ -1,5 +1,36 @@
 @import "tailwindcss";
 
+.notification-stack {
+	--notification-expanded-height: 76px;
+	position: relative;
+	height: 76px;
+	overflow: visible;
+	isolation: isolate;
+	transition: height 350ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.notification-stack:hover,
+.notification-stack:focus-within {
+	height: var(--notification-expanded-height);
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.notification-stack-card {
+	position: absolute;
+	inset: 0 0 auto;
+	z-index: calc(50 - var(--notification-index));
+	transform: translateY(calc(var(--notification-index) * 9px))
+		scale(calc(1 - var(--notification-index) * 0.035));
+	transform-origin: top center;
+	transition: transform 350ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.notification-stack:hover .notification-stack-card,
+.notification-stack:focus-within .notification-stack-card {
+	transform: translateY(calc(var(--notification-index) * 68px)) scale(1);
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: var(--color-zinc-800);

@@ -1,6 +1,5 @@
 // import {  } from "@solar-icons/react/bold";
 
-import { Toast } from "@base-ui/react";
 import {
 	BellIcon,
 	Dialog2Icon,
@@ -14,10 +13,8 @@ import {
 	PanelRightOpenIcon,
 } from "@solar-icons/react/linear";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { cn } from "cn";
 import { useNavigate } from "react-router";
 import { sidebarNavigation } from "@/config/nav-links";
-import { toastRoot, toneOf } from "@/config/toast";
 import { authClient } from "@/lib/auth-client";
 import { sessionQueryOptions } from "@/lib/session";
 import { ActionIcon } from "@/ui/action-icon";
@@ -32,9 +29,9 @@ import {
 	MenuTrigger,
 } from "@/ui/menu";
 import NavItem from "./nav-item";
+import NotificationFeed from "./notification-feed";
 
 const Sidebar = () => {
-	const { toasts } = Toast.useToastManager();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 
@@ -180,35 +177,7 @@ const Sidebar = () => {
 					))}
 				</div>
 			)}
-			{/* <hr className="border-t border-zinc-200" /> */}
-			{toasts.map((item) => (
-				<Toast.Root
-					key={item.id}
-					toast={item}
-					className={cn(toastRoot({ tone: toneOf(item.type) }))}
-				>
-					<Toast.Content
-						className={cn(
-							"flex items-start justify-between gap-3 transition-opacity duration-200",
-							"data-behind:opacity-0 data-behind:data-expanded:opacity-100",
-						)}
-					>
-						<div className="min-w-0">
-							<Toast.Title className="text-sm font-medium text-zinc-900" />
-							<Toast.Description className="text-sm text-zinc-500" />
-						</div>
-						<Toast.Close
-							aria-label="Dismiss"
-							className="size-6 shrink-0 rounded-md leading-none text-zinc-500 hover:bg-zinc-100"
-						>
-							×
-						</Toast.Close>
-					</Toast.Content>
-				</Toast.Root>
-			))}
-			{/* <div className="p-1.5 rounded-md border border-black/5 shadow-sm shadow-black/2 bg-zinc-50 text-sm text-zinc-700">
-					Notification
-				</div> */}
+			<NotificationFeed />
 			{/*<button
           type="button"
           onClick={handleSignOut}

@@ -9,11 +9,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 	return (
 		<Toast.Provider toastManager={toastManager} limit={3}>
 			{children}
-			{/* <Toast.Portal>
+			<Toast.Portal>
 				<Toast.Viewport className="fixed right-4 bottom-4 z-100 w-88 max-w-[calc(100vw-2rem)]">
 					<ToastList />
 				</Toast.Viewport>
-			</Toast.Portal> */}
+			</Toast.Portal>
 		</Toast.Provider>
 	);
 }

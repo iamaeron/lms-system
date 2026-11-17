@@ -5,7 +5,12 @@ import type {
 import { and, eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import { db } from "@/db";
-import { classroom, classroomMember, generateJoinCode } from "@/db/schema";
+import {
+	classroom,
+	classroomMember,
+	generateJoinCode,
+	notification,
+} from "@/db/schema";
 import type { Membership } from "@/lib/env";
 import { isUniqueViolation } from "@/lib/errors";
 
@@ -79,6 +84,11 @@ export const classroomService = {
 						classroomId: room.id,
 						userId: ownerId,
 						role: "teacher",
+					});
+					await tx.insert(notification).values({
+						userId: ownerId,
+						title: "Class created",
+						description: room.name,
 					});
 
 					return room;

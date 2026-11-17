@@ -1,2 +1,13 @@
 allowBuilds:
   esbuild: true
+permissions:
+  drizzle-kit:
+    skills: [drizzle, drizzle-generate, drizzle-hints, drizzle-migrations, drizzle-output-modes, drizzle-pull, drizzle-push, drizzle-responses-and-errors]
+skills:
+  dirs:
+    - .agent/skills
+    - .agents/skills
+    - .claude/skills
+    - .cursor/skills
+    - .gemini/skills
+    - .github/skills
