@@ -2,11 +2,13 @@ import type { CourseLesson, CourseSection } from "@shared/index";
 import type {
 	CreateLessonInput,
 	UpdateLessonInput,
+	UpdateSectionInput,
 } from "@shared/schema/course.schema";
 import { AddIcon, TrashBin2Icon } from "@solar-icons/react/linear";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import CourseQuizEditor from "@/components/teacher/course-quiz-editor";
+import type { QuizDraft } from "@/components/teacher/course-quiz-editor";
 import { courseMutations } from "@/features/course/mutations";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { Button } from "@/ui/button";
@@ -16,6 +18,8 @@ import { Input } from "@/ui/input";
 import { Textarea } from "@/ui/textarea";
 
 type LessonType = "video" | "text" | "quiz";
+export type LessonDraft = UpdateLessonInput;
+export type SectionDraft = UpdateSectionInput;
 
 function useInvalidateCourse(courseId: string) {
 	const queryClient = useQueryClient();
@@ -28,9 +32,13 @@ function useInvalidateCourse(courseId: string) {
 function LessonEditor({
 	courseId,
 	lesson,
+	onDraftChange,
+	onQuizDraftChange,
 }: {
 	courseId: string;
 	lesson: CourseLesson;
+	onDraftChange: (lessonId: string, data: LessonDraft) => void;
+	onQuizDraftChange: (lessonId: string, draft: QuizDraft) => void;
 }) {
 	const invalidateCourse = useInvalidateCourse(courseId);
 	const [title, setTitle] = useState(lesson.title);
@@ -40,32 +48,26 @@ function LessonEditor({
 		lesson.durationSeconds ? String(lesson.durationSeconds) : "",
 	);
 	const [isPreview, setIsPreview] = useState(lesson.isPreview);
-	const updateLesson = useMutation({
-		mutationFn: (data: UpdateLessonInput) =>
-			courseMutations.updateLesson(courseId, lesson.id, data),
-		onSuccess: invalidateCourse,
-	});
 	const deleteLesson = useMutation({
 		mutationFn: () => courseMutations.deleteLesson(courseId, lesson.id),
 		onSuccess: invalidateCourse,
 	});
 
-	const saveLesson = (event: React.FormEvent<HTMLFormElement>) => {
-		event.preventDefault();
-		const data: UpdateLessonInput = {
+	const updateDraft = (next: Partial<LessonDraft>) => {
+		const data: LessonDraft = {
 			title,
 			isPreview,
-			content: lesson.type === "text" ? content.trim() || null : undefined,
-			videoUrl: lesson.type === "video" ? videoUrl.trim() || null : undefined,
+			content: lesson.type === "text" ? content : undefined,
+			videoUrl: lesson.type === "video" ? videoUrl : undefined,
 			durationSeconds:
 				lesson.type === "video"
 					? durationSeconds
 						? Number(durationSeconds)
 						: null
 					: undefined,
+			...next,
 		};
-		setTitle(title.trim());
-		updateLesson.mutate(data);
+		onDraftChange(lesson.id, data);
 	};
 
 	const removeLesson = () => {
@@ -76,7 +78,7 @@ function LessonEditor({
 
 	return (
 		<article className="rounded-lg bg-white p-4">
-			<form onSubmit={saveLesson} className="space-y-3">
+			<div className="space-y-3">
 				<div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
 					<div className="flex items-center gap-2 px-2">
 						<span className="font-medium tracking-tight text-zinc-700">
@@ -91,13 +93,6 @@ function LessonEditor({
 						</span>
 					</div>
 					<div className="flex gap-2">
-						<Button
-							type="submit"
-							variant="flat"
-							disabled={updateLesson.isPending}
-						>
-							{updateLesson.isPending ? "Saving..." : "Save lesson"}
-						</Button>
 						<Button
 							type="button"
 							variant="flat"
@@ -118,7 +113,10 @@ function LessonEditor({
 								required
 								maxLength={160}
 								value={title}
-								onChange={(event) => setTitle(event.target.value)}
+								onChange={(event) => {
+									setTitle(event.target.value);
+									updateDraft({ title: event.target.value });
+								}}
 							/>
 						}
 					/>
@@ -132,7 +130,10 @@ function LessonEditor({
 								<Textarea
 									maxLength={50000}
 									value={content}
-									onChange={(event) => setContent(event.target.value)}
+									onChange={(event) => {
+										setContent(event.target.value);
+										updateDraft({ content: event.target.value });
+									}}
 									placeholder="Write the lesson content..."
 								/>
 							}
@@ -149,7 +150,10 @@ function LessonEditor({
 									<Input
 										type="url"
 										value={videoUrl}
-										onChange={(event) => setVideoUrl(event.target.value)}
+										onChange={(event) => {
+											setVideoUrl(event.target.value);
+											updateDraft({ videoUrl: event.target.value });
+										}}
 										placeholder="https://..."
 									/>
 								}
@@ -164,7 +168,14 @@ function LessonEditor({
 										min={1}
 										max={86400}
 										value={durationSeconds}
-										onChange={(event) => setDurationSeconds(event.target.value)}
+										onChange={(event) => {
+											setDurationSeconds(event.target.value);
+											updateDraft({
+												durationSeconds: event.target.value
+													? Number(event.target.value)
+													: null,
+											});
+										}}
 										placeholder="Optional"
 									/>
 								}
@@ -176,32 +187,29 @@ function LessonEditor({
 				<Field className="flex-row items-center">
 					<Checkbox
 						checked={isPreview}
-						onCheckedChange={(checked) => setIsPreview(checked === true)}
+						onCheckedChange={(checked) => {
+							setIsPreview(checked === true);
+							updateDraft({ isPreview: checked === true });
+						}}
 					>
 						<CheckboxIndicator />
 					</Checkbox>
 					<FieldLabel>Allow this lesson as a preview</FieldLabel>
 				</Field>
 
-				{updateLesson.isError && (
-					<p role="alert" className="text-sm text-destructive">
-						{getApiErrorMessage(updateLesson.error, "Could not save lesson.")}
-					</p>
-				)}
 				{deleteLesson.isError && (
 					<p role="alert" className="text-sm text-destructive">
 						{getApiErrorMessage(deleteLesson.error, "Could not delete lesson.")}
 					</p>
 				)}
-			</form>
+			</div>
 
 			{lesson.type === "quiz" && (
 				<CourseQuizEditor
-					courseId={courseId}
 					lessonId={lesson.id}
 					lessonTitle={lesson.title}
 					quiz={lesson.quizzes[0]}
-					key={`${lesson.quizzes[0]?.id ?? "new"}-${lesson.quizzes[0]?.updatedAt ?? ""}-${lesson.title}`}
+					onDraftChange={onQuizDraftChange}
 				/>
 			)}
 		</article>
@@ -211,23 +219,21 @@ function LessonEditor({
 export default function CourseSectionEditor({
 	courseId,
 	section,
+	onLessonDraftChange,
+	onSectionDraftChange,
+	onQuizDraftChange,
 }: {
 	courseId: string;
 	section: CourseSection;
+	onLessonDraftChange: (lessonId: string, draft: LessonDraft) => void;
+	onSectionDraftChange: (sectionId: string, draft: SectionDraft) => void;
+	onQuizDraftChange: (lessonId: string, draft: QuizDraft) => void;
 }) {
 	const invalidateCourse = useInvalidateCourse(courseId);
 	const [title, setTitle] = useState(section.title);
 	const [showLessonForm, setShowLessonForm] = useState(false);
 	const [lessonTitle, setLessonTitle] = useState("");
 	const [lessonType, setLessonType] = useState<LessonType>("text");
-	const updateSection = useMutation({
-		mutationFn: () =>
-			courseMutations.updateSection(courseId, section.id, { title }),
-		onSuccess: async () => {
-			setTitle((current) => current.trim());
-			await invalidateCourse();
-		},
-	});
 	const deleteSection = useMutation({
 		mutationFn: () => courseMutations.deleteSection(courseId, section.id),
 		onSuccess: invalidateCourse,
@@ -242,10 +248,6 @@ export default function CourseSectionEditor({
 		},
 	});
 
-	const saveSection = (event: React.FormEvent<HTMLFormElement>) => {
-		event.preventDefault();
-		updateSection.mutate();
-	};
 	const addLesson = (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 		createLesson.mutate({
@@ -265,10 +267,7 @@ export default function CourseSectionEditor({
 
 	return (
 		<section className="space-y-3 rounded-xl bg-zinc-50 p-4 sm:p-5">
-			<form
-				onSubmit={saveSection}
-				className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center"
-			>
+			<div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
 				<div className="flex flex-1 items-center gap-3">
 					<span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
 						{section.position}
@@ -280,7 +279,10 @@ export default function CourseSectionEditor({
 									required
 									maxLength={160}
 									value={title}
-									onChange={(event) => setTitle(event.target.value)}
+									onChange={(event) => {
+										setTitle(event.target.value);
+										onSectionDraftChange(section.id, { title: event.target.value });
+									}}
 									aria-label={`Section ${section.position} title`}
 									className="font-semibold"
 								/>
@@ -289,13 +291,6 @@ export default function CourseSectionEditor({
 					</Field>
 				</div>
 				<div className="flex gap-2 pl-11 sm:pl-0">
-					<Button
-						type="submit"
-						variant="flat"
-						disabled={updateSection.isPending || title.trim() === section.title}
-					>
-						Save
-					</Button>
 					<Button
 						type="button"
 						variant="flat"
@@ -306,13 +301,7 @@ export default function CourseSectionEditor({
 						Delete section
 					</Button>
 				</div>
-			</form>
-
-			{updateSection.isError && (
-				<p role="alert" className="text-sm text-destructive">
-					{getApiErrorMessage(updateSection.error, "Could not update section.")}
-				</p>
-			)}
+			</div>
 			{deleteSection.isError && (
 				<p role="alert" className="text-sm text-destructive">
 					{getApiErrorMessage(deleteSection.error, "Could not delete section.")}
@@ -321,7 +310,13 @@ export default function CourseSectionEditor({
 
 			<div className="space-y-3 pl-0 sm:pl-11">
 				{section.lessons.map((lesson) => (
-					<LessonEditor key={lesson.id} courseId={courseId} lesson={lesson} />
+					<LessonEditor
+						key={lesson.id}
+						courseId={courseId}
+						lesson={lesson}
+						onDraftChange={onLessonDraftChange}
+						onQuizDraftChange={onQuizDraftChange}
+					/>
 				))}
 
 				{showLessonForm ? (

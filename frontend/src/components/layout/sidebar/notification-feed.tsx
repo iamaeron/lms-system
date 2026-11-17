@@ -26,7 +26,9 @@ export default function NotificationFeed() {
 		mutationFn: notificationMutations.markRead,
 		onSuccess: invalidate,
 	});
-	const unreadCount = notifications.filter((notification) => !notification.readAt).length;
+	const unreadCount = notifications.filter(
+		(notification) => !notification.readAt,
+	).length;
 	const expandedHeight = `${Math.min(Math.max(notifications.length, 1) * 68, 260)}px`;
 
 	return (
@@ -52,16 +54,24 @@ export default function NotificationFeed() {
 				)}
 			</div>
 			{isPending ? (
-				<p className="px-1 py-2 text-sm text-zinc-500">Loading notifications…</p>
+				<p className="px-1 py-2 text-sm text-zinc-500">
+					Loading notifications…
+				</p>
 			) : isError ? (
-				<p className="px-1 py-2 text-sm text-zinc-500">Couldn’t load notifications.</p>
+				<p className="px-1 py-2 text-sm text-zinc-500">
+					Couldn’t load notifications.
+				</p>
 			) : notifications.length === 0 ? (
 				<p className="px-1 py-2 text-sm text-zinc-500">You’re all caught up.</p>
 			) : (
 				<div
 					className="notification-stack"
-					style={{ "--notification-expanded-height": expandedHeight } as React.CSSProperties}
-					aria-label={`${notifications.length} notifications. Hover to expand.`}
+					style={
+						{
+							"--notification-expanded-height": expandedHeight,
+						} as React.CSSProperties
+					}
+					// aria-label={`${notifications.length} notifications. Hover to expand.`}
 				>
 					{notifications.map((notification, index) => (
 						<article

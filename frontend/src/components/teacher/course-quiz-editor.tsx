@@ -1,13 +1,7 @@
 import type { CourseQuiz } from "@shared/index";
-import {
-	saveQuizSchema,
-	type SaveQuizInput,
-} from "@shared/schema/course.schema";
-import { AddIcon } from "@solar-icons/react/linear";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { courseMutations } from "@/features/course/mutations";
-import { getApiErrorMessage } from "@/lib/api-error";
+import { AddIcon, MinusIcon } from "@solar-icons/react/linear";
+import { useEffect, useRef, useState } from "react";
+import { ActionIcon } from "@/ui/action-icon";
 import { Button } from "@/ui/button";
 import { Field, FieldControl, FieldLabel } from "@/ui/field";
 import { Input } from "@/ui/input";
@@ -20,7 +14,7 @@ type QuestionDraft = {
 	points: string;
 	options: OptionDraft[];
 };
-type QuizDraft = {
+export type QuizDraft = {
 	title: string;
 	passingScore: string;
 	maxAttempts: string;
@@ -46,7 +40,10 @@ function createQuestion(type: QuestionType = "single_choice"): QuestionDraft {
 	};
 }
 
-function createDraft(quiz: CourseQuiz | undefined, lessonTitle: string): QuizDraft {
+function createDraft(
+	quiz: CourseQuiz | undefined,
+	lessonTitle: string,
+): QuizDraft {
 	return {
 		title: quiz?.title ?? `${lessonTitle} Quiz`,
 		passingScore: String(quiz?.passingScore ?? 70),
@@ -68,82 +65,47 @@ function createDraft(quiz: CourseQuiz | undefined, lessonTitle: string): QuizDra
 }
 
 export default function CourseQuizEditor({
-	courseId,
 	lessonId,
 	lessonTitle,
 	quiz,
+	onDraftChange,
 }: {
-	courseId: string;
 	lessonId: string;
 	lessonTitle: string;
 	quiz?: CourseQuiz;
+	onDraftChange: (lessonId: string, draft: QuizDraft) => void;
 }) {
-	const queryClient = useQueryClient();
 	const [draft, setDraft] = useState(() => createDraft(quiz, lessonTitle));
-	const [validationError, setValidationError] = useState("");
-
-	const saveQuiz = useMutation({
-		mutationFn: (variables: {
-			courseId: string;
-			lessonId: string;
-			data: SaveQuizInput;
-		}) =>
-			courseMutations.saveQuiz(
-				variables.courseId,
-				variables.lessonId,
-				variables.data,
-			),
-		onSuccess: async () => {
-			await queryClient.invalidateQueries({
-				queryKey: ["courses", "detail", courseId],
-			});
-		},
-	});
+	const questionInputRefs = useRef(new Map<number, HTMLInputElement>());
+	const pendingFocusIndex = useRef<number | null>(null);
+	const commitDraft = (next: QuizDraft) => {
+		setDraft(next);
+		onDraftChange(lessonId, next);
+	};
+	useEffect(() => {
+		const index = pendingFocusIndex.current;
+		if (index === null) return;
+		const input = questionInputRefs.current.get(index);
+		if (!input) return;
+		pendingFocusIndex.current = null;
+		input.scrollIntoView({ behavior: "smooth", block: "center" });
+		input.focus({ preventScroll: true });
+	}, [draft.questions.length]);
 
 	const updateQuestion = (
 		index: number,
 		update: (question: QuestionDraft) => QuestionDraft,
 	) => {
-		setDraft((current) => ({
-			...current,
-			questions: current.questions.map((question, itemIndex) =>
+		commitDraft({
+			...draft,
+			questions: draft.questions.map((question, itemIndex) =>
 				itemIndex === index ? update(question) : question,
 			),
-		}));
-	};
-
-	const submit = async (event: React.FormEvent<HTMLFormElement>) => {
-		event.preventDefault();
-		setValidationError("");
-		saveQuiz.reset();
-		const parsed = saveQuizSchema.safeParse({
-			title: draft.title,
-			passingScore: Number(draft.passingScore),
-			maxAttempts: draft.maxAttempts ? Number(draft.maxAttempts) : null,
-			timeLimitMinutes: draft.timeLimitMinutes
-				? Number(draft.timeLimitMinutes)
-				: null,
-			questions: draft.questions.map((question) => ({
-				...question,
-				points: Number(question.points),
-			})),
-		});
-		if (!parsed.success) {
-			setValidationError(
-				parsed.error.issues[0]?.message ?? "Check the quiz questions.",
-			);
-			return;
-		}
-
-		saveQuiz.mutate({
-			courseId,
-			lessonId,
-			data: parsed.data,
 		});
 	};
 
 	return (
-		<form onSubmit={submit} className="mt-4 space-y-4 rounded-lg bg-zinc-50 p-4">
+		<div className="mt-4 space-y-4 rounded-lg bg-zinc-50 p-4">
 			<div>
 				<h4 className="font-medium text-zinc-800">Quiz settings</h4>
 				<p className="mt-1 text-xs text-zinc-500">
@@ -153,78 +115,78 @@ export default function CourseQuizEditor({
 
 			<Field>
 				<FieldLabel>Quiz title</FieldLabel>
-				<FieldControl render={<Input
-					required
-					maxLength={160}
-					value={draft.title}
-					onChange={(event) =>
-						setDraft((current) => ({ ...current, title: event.target.value }))
+				<FieldControl
+					render={
+						<Input
+							required
+							maxLength={160}
+							value={draft.title}
+							onChange={(event) => commitDraft({ ...draft, title: event.target.value })}
+						/>
 					}
-				/>} />
+				/>
 			</Field>
 
 			<div className="grid gap-3 sm:grid-cols-3">
 				<Field>
 					<FieldLabel>Passing score (%)</FieldLabel>
-					<FieldControl render={<Input
-						type="number"
-						min={0}
-						max={100}
-						value={draft.passingScore}
-						onChange={(event) =>
-							setDraft((current) => ({
-								...current,
-								passingScore: event.target.value,
-							}))
+					<FieldControl
+						render={
+							<Input
+								type="number"
+								min={0}
+								max={100}
+								value={draft.passingScore}
+								onChange={(event) => commitDraft({ ...draft, passingScore: event.target.value })}
+							/>
 						}
-					/>} />
+					/>
 				</Field>
 				<Field>
 					<FieldLabel>Attempts</FieldLabel>
-					<FieldControl render={<Input
-						type="number"
-						min={1}
-						max={100}
-						value={draft.maxAttempts}
-						onChange={(event) =>
-							setDraft((current) => ({
-								...current,
-								maxAttempts: event.target.value,
-							}))
+					<FieldControl
+						render={
+							<Input
+								type="number"
+								min={1}
+								max={100}
+								value={draft.maxAttempts}
+								onChange={(event) => commitDraft({ ...draft, maxAttempts: event.target.value })}
+								placeholder="Unlimited"
+							/>
 						}
-						placeholder="Unlimited"
-					/>} />
+					/>
 				</Field>
 				<Field>
 					<FieldLabel>Time limit (minutes)</FieldLabel>
-					<FieldControl render={<Input
-						type="number"
-						min={1}
-						max={1440}
-						value={draft.timeLimitMinutes}
-						onChange={(event) =>
-							setDraft((current) => ({
-								...current,
-								timeLimitMinutes: event.target.value,
-							}))
+					<FieldControl
+						render={
+							<Input
+								type="number"
+								min={1}
+								max={1440}
+								value={draft.timeLimitMinutes}
+								onChange={(event) => commitDraft({ ...draft, timeLimitMinutes: event.target.value })}
+								placeholder="No limit"
+							/>
 						}
-						placeholder="No limit"
-					/>} />
+					/>
 				</Field>
 			</div>
 
-			<div className="space-y-3">
+			<div className="space-y-2">
 				<div className="flex items-center justify-between gap-3">
 					<h5 className="text-sm font-medium text-zinc-700">Questions</h5>
 					<Button
 						type="button"
 						variant="flat"
-						onClick={() =>
-							setDraft((current) => ({
-								...current,
-								questions: [...current.questions, createQuestion()],
-							}))
-						}
+					onClick={() => {
+						pendingFocusIndex.current = draft.questions.length;
+						commitDraft({
+							...draft,
+							questions: [...draft.questions, createQuestion()],
+						});
+					}}
 					>
 						<AddIcon size={15} />
 						Add question
@@ -233,205 +195,227 @@ export default function CourseQuizEditor({
 
 				{draft.questions.length === 0 && (
 					<p className="rounded-md border border-dashed border-zinc-300 px-3 py-4 text-center text-sm text-zinc-500">
-						No questions yet. You can save the quiz and add questions later.
+						No questions yet. Add questions here, then save all course changes below.
 					</p>
 				)}
 
-				{draft.questions.map((question, questionIndex) => (
-					<fieldset
-						key={questionIndex}
-						className="space-y-3 rounded-lg border border-zinc-200 bg-white p-3"
-					>
-						<legend className="sr-only">Question {questionIndex + 1}</legend>
-						<div className="flex flex-col gap-2 sm:flex-row">
-							<Input
-								required
-								maxLength={2000}
-								value={question.prompt}
-								onChange={(event) =>
-									updateQuestion(questionIndex, (current) => ({
-										...current,
-										prompt: event.target.value,
-									}))
-								}
-								placeholder={`Question ${questionIndex + 1}`}
-								aria-label={`Question ${questionIndex + 1}`}
-								wrapperClassName="flex-1"
-							/>
-							<select
-								className="rounded-lg bg-zinc-50 px-3 py-2 text-sm text-zinc-700"
-								value={question.type}
-								aria-label={`Question ${questionIndex + 1} type`}
-								onChange={(event) => {
-									const type = event.target.value as QuestionType;
-									updateQuestion(questionIndex, (current) => {
-										if (type === "true_false") {
-											return {
-												...current,
-												type,
-												options: [
-													{ text: "True", isCorrect: true },
-													{ text: "False", isCorrect: false },
-												],
-											};
-										}
-										const firstCorrect = Math.max(
-											0,
-											current.options.findIndex((option) => option.isCorrect),
-										);
-										return {
-											...current,
-											type,
-											options: current.options.map((option, index) => ({
-												...option,
-												isCorrect:
-													type === "single_choice"
-														? index === firstCorrect
-														: option.isCorrect || index === firstCorrect,
-											})),
-										};
-									});
-								}}
-							>
-								<option value="single_choice">Single choice</option>
-								<option value="multiple_choice">Multiple choice</option>
-								<option value="true_false">True or false</option>
-							</select>
-							<Input
-								type="number"
-								min={1}
-								max={1000}
-								value={question.points}
-								onChange={(event) =>
-									updateQuestion(questionIndex, (current) => ({
-										...current,
-										points: event.target.value,
-									}))
-								}
-								aria-label={`Question ${questionIndex + 1} points`}
-								className="sm:w-20"
-							/>
-							<Button
-								type="button"
-								variant="flat"
-								onClick={() =>
-									setDraft((current) => ({
-										...current,
-										questions: current.questions.filter(
-											(_, index) => index !== questionIndex,
-										),
-									}))
-								}
-								aria-label={`Remove question ${questionIndex + 1}`}
-							>
-								Remove
-							</Button>
-						</div>
-
-						<div className="space-y-2">
-							{question.options.map((option, optionIndex) => (
-								<div
-									key={optionIndex}
-									className="flex items-center gap-2 pl-1"
-								>
-									<input
-										type={
-											question.type === "multiple_choice"
-												? "checkbox"
-												: "radio"
-										}
-										name={`correct-answer-${questionIndex}`}
-										checked={option.isCorrect}
-										onChange={(event) => {
-											updateQuestion(questionIndex, (current) => ({
-												...current,
-												options: current.options.map((item, index) => ({
-													...item,
-													isCorrect:
-														question.type === "multiple_choice"
-															? index === optionIndex
-																? event.target.checked
-																: item.isCorrect
-															: index === optionIndex,
-												})),
-											}));
-										}}
-										aria-label={`Mark option ${optionIndex + 1} correct`}
-									/>
-									<Input
-										required
-										disabled={question.type === "true_false"}
-										maxLength={500}
-										value={option.text}
-										onChange={(event) =>
-											updateQuestion(questionIndex, (current) => ({
-												...current,
-												options: current.options.map((item, index) =>
-													index === optionIndex
-														? { ...item, text: event.target.value }
-														: item,
-												),
-											}))
-										}
-										placeholder={`Option ${optionIndex + 1}`}
-									/>
-									{question.type !== "true_false" &&
-										question.options.length > 2 && (
-											<Button
-												type="button"
-												variant="flat"
-												onClick={() =>
-													updateQuestion(questionIndex, (current) => ({
-														...current,
-														options: current.options.filter(
-															(_, index) => index !== optionIndex,
-														),
-													}))
-												}
-											>
-												Remove
-											</Button>
-										)}
-								</div>
-							))}
-							{question.type !== "true_false" &&
-								question.options.length < 6 && (
+				<div className="space-y-6">
+					{draft.questions.map((question, questionIndex) => (
+						<div className="flex gap-2" key={questionIndex}>
+							<div className="text-sm text-zinc-700 font-medium bg-zinc-200 rounded-full flex items-center justify-center size-6 shrink-0">
+								{questionIndex + 1}
+							</div>
+							<fieldset className="flex-1 space-y-1 rounded-lg">
+								<legend className="sr-only">
+									Question {questionIndex + 1}
+								</legend>
+								<div className="bg-white p-3 rounded-t-xl rounded-b-sm flex flex-col gap-2 sm:flex-row sm:items-end">
+									<Field className="min-w-0 flex-1">
+										<FieldLabel>Question {questionIndex + 1}</FieldLabel>
+										<FieldControl
+											render={
+												<Input
+													required
+													maxLength={2000}
+													ref={(input) => {
+									if (input) {
+										questionInputRefs.current.set(questionIndex, input);
+									} else {
+										questionInputRefs.current.delete(questionIndex);
+									}
+													}}
+													value={question.prompt}
+													onChange={(event) => {
+														const prompt = event.currentTarget.value;
+														updateQuestion(questionIndex, (current) => ({
+															...current,
+															prompt,
+														}));
+													}}
+													placeholder={`Question ${questionIndex + 1}`}
+												/>
+											}
+										/>
+									</Field>
+									<Field className="sm:w-40 sm:shrink-0">
+										<FieldLabel>Type</FieldLabel>
+										<FieldControl
+											render={
+												<select
+													className="w-full rounded-lg bg-zinc-50 px-3 py-2 text-sm text-zinc-700"
+													value={question.type}
+													onChange={(event) => {
+														const type = event.currentTarget
+															.value as QuestionType;
+														updateQuestion(questionIndex, (current) => {
+															if (type === "true_false") {
+																return {
+																	...current,
+																	type,
+																	options: [
+																		{ text: "True", isCorrect: true },
+																		{ text: "False", isCorrect: false },
+																	],
+																};
+															}
+															const firstCorrect = Math.max(
+																0,
+																current.options.findIndex(
+																	(option) => option.isCorrect,
+																),
+															);
+															return {
+																...current,
+																type,
+																options: current.options.map((option, index) => ({
+																	...option,
+																	isCorrect:
+																		type === "single_choice"
+																			? index === firstCorrect
+																			: option.isCorrect || index === firstCorrect,
+																})),
+															};
+														});
+													}}
+												>
+													<option value="single_choice">Single choice</option>
+													<option value="multiple_choice">Multiple choice</option>
+													<option value="true_false">True or False</option>
+												</select>
+											}
+										/>
+									</Field>
+									<Field className="sm:w-24 sm:shrink-0">
+										<FieldLabel>Points</FieldLabel>
+										<FieldControl
+											render={
+												<Input
+													type="number"
+													min={1}
+													max={1000}
+													value={question.points}
+													onChange={(event) => {
+														const points = event.currentTarget.value;
+														updateQuestion(questionIndex, (current) => ({
+															...current,
+															points,
+														}));
+													}}
+												/>
+											}
+										/>
+									</Field>
 									<Button
 										type="button"
 										variant="flat"
+										className="sm:self-end"
 										onClick={() =>
-											updateQuestion(questionIndex, (current) => ({
-												...current,
-												options: [
-													...current.options,
-													{ text: "", isCorrect: false },
-												],
-											}))
+							commitDraft({
+								...draft,
+								questions: draft.questions.filter(
+													(_, index) => index !== questionIndex,
+												),
+							})
 										}
+										aria-label={`Remove question ${questionIndex + 1}`}
 									>
-										<AddIcon size={14} />
-										Add option
+										Remove
 									</Button>
-								)}
+								</div>
+
+								<div className="space-y-2 bg-white rounded-b-xl rounded-t-sm p-3">
+									{question.options.map((option, optionIndex) => (
+										<div
+											key={optionIndex}
+											className="flex items-center gap-2 pl-1"
+										>
+											<input
+												type={
+													question.type === "multiple_choice"
+														? "checkbox"
+														: "radio"
+												}
+												name={`correct-answer-${questionIndex}`}
+												checked={option.isCorrect}
+												onChange={(event) => {
+													const checked = event.currentTarget.checked;
+													updateQuestion(questionIndex, (current) => ({
+														...current,
+														options: current.options.map((item, index) => ({
+															...item,
+															isCorrect:
+																question.type === "multiple_choice"
+																	? index === optionIndex
+																		? checked
+																		: item.isCorrect
+																	: index === optionIndex,
+														})),
+													}));
+												}}
+												aria-label={`Mark option ${optionIndex + 1} correct`}
+											/>
+											<Input
+												required
+												readOnly={question.type === "true_false"}
+												maxLength={500}
+												value={option.text}
+												onChange={(event) => {
+													const text = event.currentTarget.value;
+													updateQuestion(questionIndex, (current) => ({
+														...current,
+														options: current.options.map((item, index) =>
+															index === optionIndex ? { ...item, text } : item,
+														),
+													}));
+												}}
+												placeholder={`Option ${optionIndex + 1}`}
+											/>
+											{question.type !== "true_false" &&
+												question.options.length > 2 && (
+													<ActionIcon
+														type="button"
+														variant="flat"
+														onClick={() =>
+															updateQuestion(questionIndex, (current) => ({
+																...current,
+																options: current.options.filter(
+																	(_, index) => index !== optionIndex,
+																),
+															}))
+														}
+													>
+														<MinusIcon strokeWidth={2} />
+													</ActionIcon>
+												)}
+										</div>
+									))}
+									{question.type !== "true_false" &&
+										question.options.length < 6 && (
+											<Button
+												type="button"
+												variant="flat"
+												className="ml-6.5"
+												onClick={() =>
+													updateQuestion(questionIndex, (current) => ({
+														...current,
+														options: [
+															...current.options,
+															{ text: "", isCorrect: false },
+														],
+													}))
+												}
+											>
+												<AddIcon size={14} />
+												Add option
+											</Button>
+										)}
+								</div>
+							</fieldset>
 						</div>
-					</fieldset>
-				))}
+					))}
+				</div>
 			</div>
 
-			{validationError && (
-				<p role="alert" className="text-sm text-destructive">
-					{validationError}
-				</p>
-			)}
-			{saveQuiz.isError && (
-				<p role="alert" className="text-sm text-destructive">
-					{getApiErrorMessage(saveQuiz.error, "Could not save quiz.")}
-				</p>
-			)}
-
-			<Button type="submit" disabled={saveQuiz.isPending}>
-				{saveQuiz.isPending ? "Saving quiz..." : "Save quiz"}
-			</Button>
-		</form>
+		</div>
 	);
 }

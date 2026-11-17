@@ -9,13 +9,13 @@ import {
 	MagnifierIcon,
 	SquareAcademicCapIcon,
 } from "@solar-icons/react/linear";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { cn } from "cn";
 import { useState } from "react";
 import { Link } from "react-router";
 import CreateCourseModal from "@/components/teacher/create-course-modal";
 import { paths } from "@/config/paths";
 import { courseQueries } from "@/features/course/queries";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 import {
@@ -97,7 +97,7 @@ export default function TeacherCourses() {
 				</svg>
 				<div
 					aria-hidden="true"
-					className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-3/5 bg-linear-to-l from-green-800 via-green-800/95 to-transparent"
+					className="pointer-events-none absolute inset-y-0 right-0 z-1 w-3/5 bg-linear-to-l from-green-800 via-green-800/95 to-transparent"
 				/>
 				<div className="relative z-10 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
 					<div className="max-w-2xl">
@@ -231,7 +231,7 @@ export default function TeacherCourses() {
 							<Link
 								key={course.id}
 								to={paths.portal.teacher.course.getHref(course.id)}
-								className="block overflow-hidden rounded-xl border border-zinc-200/80 bg-white shadow-sm"
+								className="block overflow-hidden rounded-xl bg-zinc-50"
 							>
 								{course.thumbnailUrl ? (
 									<img
@@ -257,9 +257,7 @@ export default function TeacherCourses() {
 										{course.summary || "No summary yet."}
 									</p>
 									<p className="text-xs text-zinc-500">
-										{course.department?.name ?? "No department"}
-										{course.gradeLevel ? ` · Grade ${course.gradeLevel}` : ""}
-										{` · ${course.level}`}
+										{course.department?.code ?? "No department"}
 									</p>
 								</div>
 							</Link>
@@ -268,15 +266,15 @@ export default function TeacherCourses() {
 				)}
 			</section>
 
-			<section className="grid gap-3 rounded-xl border border-blue-100 bg-blue-50/70 p-4 sm:grid-cols-[auto_1fr] sm:items-center sm:p-5">
+			<section className="grid gap-3 rounded-xl bg-blue-50 p-4 sm:grid-cols-[auto_1fr] sm:items-center sm:p-5">
 				<div className="flex size-10 items-center justify-center rounded-lg bg-white text-blue-600 shadow-sm">
 					<SquareAcademicCapIcon size={20} />
 				</div>
 				<div>
-					<p className="text-sm font-medium text-zinc-800">
+					<p className="text-sm font-medium text-blue-700">
 						Keep reusable content separate from classwork
 					</p>
-					<p className="mt-1 text-sm leading-5 text-zinc-600">
+					<p className="mt-1 text-sm leading-5 text-blue-700">
 						Use this library to prepare courses and lessons. Post assignments,
 						due dates, and announcements inside the classroom they belong to.
 					</p>
