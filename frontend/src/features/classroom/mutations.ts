@@ -6,4 +6,11 @@ export const classroomMutations = {
 		const response = await api.post("/api/classrooms", data);
 		return response.data;
 	},
+	addCourseToClasswork: async (classroomId: string, courseId: string) => {
+		const response = await api.post(
+			`/api/classrooms/${classroomId}/classwork/courses`,
+			{ courseId },
+		);
+		return response.data;
+	},
 };

@@ -59,6 +59,23 @@ export interface ClassroomMembersResponse {
 	}>;
 }
 
+export interface ClassroomCourseworkItem {
+	postId: string;
+	createdAt: Date;
+	course: {
+		id: string;
+		title: string;
+		summary: string | null;
+		thumbnailUrl: string | null;
+		sectionCount: number;
+		lessonCount: number;
+	};
+}
+
+export type ClassroomCourseworkResponse = {
+	data: ClassroomCourseworkItem[];
+};
+
 export interface CreateClassroomInput {
 	name: string;
 	section?: string;

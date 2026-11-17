@@ -2,6 +2,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { createBrowserRouter, redirect } from "react-router";
 import { paths } from "./config/paths";
 import { classroomQueries } from "./features/classroom/queries";
+import { courseQueries } from "./features/course/queries";
 import { requireRole } from "./lib/guards";
 import { protectedLoader, publicOnlyLoader } from "./lib/protected-loader";
 
@@ -74,7 +75,37 @@ export function createRouter(queryClient: QueryClient) {
 								})),
 						},
 						{
+							path: paths.portal.teacher.classroom.path,
+							loader: async ({ params }) => {
+								if (!params.classroomId)
+									throw new Error("Missing classroom ID");
+								return queryClient.query(
+									classroomQueries.detail(params.classroomId),
+								);
+							},
+							handle: { title: "Classroom", showBack: true },
+							lazy: () =>
+								import("./routes/teacher/classroom").then((m) => ({
+									Component: m.default,
+								})),
+						},
+						{
+							path: paths.portal.teacher.course.path,
+							loader: async ({ params }) => {
+								if (!params.courseId) throw new Error("Missing course ID");
+								return queryClient.query(
+									courseQueries.detail(params.courseId),
+								);
+							},
+							handle: { title: "Course Editor", showBack: true },
+							lazy: () =>
+								import("./routes/teacher/course").then((m) => ({
+									Component: m.default,
+								})),
+						},
+						{
 							path: paths.portal.teacher.courses.path,
+							loader: () => queryClient.query(courseQueries.list()),
 							handle: { title: "Course Library" },
 							lazy: () =>
 								import("./routes/teacher/courses").then((m) => ({

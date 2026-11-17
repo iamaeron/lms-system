@@ -39,7 +39,7 @@ export default function TeacherClassrooms() {
 				</div>
 			</div>
 
-			<div className="-mx-2.5 mt-2 flex items-center">
+			<div className="mt-2 flex items-center">
 				<Select
 					modal={false}
 					defaultValue="newest"
@@ -51,7 +51,7 @@ export default function TeacherClassrooms() {
 				>
 					<SelectTrigger className="min-w-0 bg-transparent shadow-none">
 						<SelectValue />
-						<AltArrowDownIcon strokeWidth={2} size={16} />
+						<AltArrowDownIcon strokeWidth={2} size={12} />
 					</SelectTrigger>
 
 					<SelectPortal>
@@ -93,7 +93,7 @@ export default function TeacherClassrooms() {
 				>
 					<SelectTrigger className="min-w-0 bg-transparent shadow-none">
 						<SelectValue />
-						<AltArrowDownIcon strokeWidth={2} size={16} />
+						<AltArrowDownIcon strokeWidth={2} size={12} />
 					</SelectTrigger>
 
 					<SelectPortal>

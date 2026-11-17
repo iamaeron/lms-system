@@ -25,7 +25,7 @@ export default function Signin() {
 	return (
 		<div className="flex items-center justify-center min-h-screen">
 			<div className="max-w-md px-4 mx-auto w-full">
-				<h1 className="text-zinc-700 text-2xl font-medium mb-4 tracking-tight">
+				<h1 className="text-zinc-700 text-2xl font-medium -mt-4 px-2 text-center mb-10 tracking-tight">
 					Sign in to your account
 				</h1>
 
