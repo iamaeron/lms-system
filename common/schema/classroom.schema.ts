@@ -48,5 +48,12 @@ export const joinClassroomSchema = z.object({
 		.length(7, "Class codes are 7 characters"),
 });
 
+export const addCourseToClassworkSchema = z.object({
+	courseId: z.string().trim().min(1),
+});
+
 export type CreateClassroomInput = z.infer<typeof createClassroomSchema>;
 export type UpdateClassroomInput = z.infer<typeof updateClassroomSchema>;
+export type AddCourseToClassworkInput = z.infer<
+	typeof addCourseToClassworkSchema
+>;

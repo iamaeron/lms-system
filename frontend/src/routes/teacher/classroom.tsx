@@ -11,6 +11,7 @@ import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { cn } from "cn";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams } from "react-router";
+import ClassroomCourseClasswork from "@/components/teacher/classroom-course-classwork";
 import DefaultClassBanner from "@/components/teacher/default-class-banner";
 import { classroomQueries } from "@/features/classroom/queries";
 import { classLabel } from "@/lib/classroom";
@@ -203,10 +204,12 @@ export default function TeacherClassroom() {
 								key={tab.value}
 								value={tab.value}
 								className={cn(
-									"relative z-10 shrink-0 border-b-2 border-transparent px-4 py-3 text-sm font-medium text-zinc-500 outline-none transition-colors hover:text-zinc-800 focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-blue-400 data-active:text-blue-500",
+									"relative z-10 shrink-0 border-b-2 group/tab-item border-transparent px-2 py-3 text-sm font-medium text-zinc-500 outline-none transition-colors hover:text-zinc-800 focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-blue-400 data-active:text-blue-500",
 								)}
 							>
-								{tab.label}
+								<span className="px-2 py-1 group-hover/tab-item:bg-zinc-100 rounded-full">
+									{tab.label}
+								</span>
 							</Tabs.Tab>
 						))}
 						<Tabs.Indicator
@@ -304,12 +307,7 @@ export default function TeacherClassroom() {
 				</Tabs.Panel>
 
 				<Tabs.Panel value="classwork" className="outline-none">
-					<EmptyTab
-						icon={ClipboardListIcon}
-						title="No classwork yet"
-						description="Assignments, learning materials, and quizzes for this classroom will appear here."
-						buttonLabel="Create classwork"
-					/>
+					<ClassroomCourseClasswork classroomId={classroomId} />
 				</Tabs.Panel>
 
 				<Tabs.Panel value="people" className="outline-none">

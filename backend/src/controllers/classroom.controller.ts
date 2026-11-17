@@ -1,4 +1,5 @@
 import {
+	addCourseToClassworkSchema,
 	classroomParam,
 	createClassroomSchema,
 	joinClassroomSchema,
@@ -63,6 +64,33 @@ export const classroomControllers = {
 				c.get("membership").role,
 			);
 			return c.json({ data });
+		},
+	),
+
+	classworkCourses: factory.createHandlers(
+		requireAuth,
+		validate("param", classroomParam),
+		teacherOnly,
+		async (c) => {
+			const { classroomId } = c.req.valid("param");
+			const data = await classroomService.listCourseClasswork(classroomId);
+			return c.json({ data });
+		},
+	),
+
+	addCourseToClasswork: factory.createHandlers(
+		requireAuth,
+		validate("param", classroomParam),
+		teacherOnly,
+		validate("json", addCourseToClassworkSchema),
+		async (c) => {
+			const { classroomId } = c.req.valid("param");
+			const data = await classroomService.addCourseToClasswork(
+				classroomId,
+				c.get("user").id,
+				c.req.valid("json"),
+			);
+			return c.json({ data }, 201);
 		},
 	),
 

@@ -1,11 +1,18 @@
 import type {
+	AddCourseToClassworkInput,
 	CreateClassroomInput,
 	UpdateClassroomInput,
 } from "@shared/schema/classroom.schema";
 import { and, eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import { db } from "@/db";
-import { classroom, classroomMember, generateJoinCode } from "@/db/schema";
+import {
+	classroom,
+	classroomMember,
+	generateJoinCode,
+	post,
+	postAttachment,
+} from "@/db/schema";
 import type { Membership } from "@/lib/env";
 import { isUniqueViolation } from "@/lib/errors";
 
@@ -89,6 +96,113 @@ export const classroomService = {
 			}
 		}
 		throw new Error("Could not generate a unique join code");
+	},
+
+	async listCourseClasswork(classroomId: string) {
+		const posts = await db.query.post.findMany({
+			where: { classroomId, type: "material" },
+			orderBy: { createdAt: "desc" },
+			with: {
+				attachments: {
+					where: { kind: "course" },
+					orderBy: { position: "asc" },
+					with: {
+						course: {
+							columns: {
+								id: true,
+								title: true,
+								summary: true,
+								thumbnailUrl: true,
+							},
+							with: {
+								sections: {
+									columns: { id: true },
+									with: { lessons: { columns: { id: true } } },
+								},
+							},
+						},
+					},
+				},
+			},
+		});
+
+		return posts.flatMap((classworkPost) =>
+			classworkPost.attachments.flatMap((attachment) => {
+				if (!attachment.course) return [];
+				return [
+					{
+						postId: classworkPost.id,
+						createdAt: classworkPost.createdAt,
+						course: {
+							id: attachment.course.id,
+							title: attachment.course.title,
+							summary: attachment.course.summary,
+							thumbnailUrl: attachment.course.thumbnailUrl,
+							sectionCount: attachment.course.sections.length,
+							lessonCount: attachment.course.sections.reduce(
+								(total, courseSection) => total + courseSection.lessons.length,
+								0,
+							),
+						},
+					},
+				];
+			}),
+		);
+	},
+
+	async addCourseToClasswork(
+		classroomId: string,
+		authorId: string,
+		input: AddCourseToClassworkInput,
+	) {
+		const courseToAdd = await db.query.course.findFirst({
+			where: { id: input.courseId, instructorId: authorId },
+			columns: { id: true, title: true },
+		});
+		if (!courseToAdd) {
+			throw new HTTPException(404, { message: "Course not found" });
+		}
+
+		const [existing] = await db
+			.select({ id: post.id })
+			.from(postAttachment)
+			.innerJoin(post, eq(postAttachment.postId, post.id))
+			.where(
+				and(
+					eq(post.classroomId, classroomId),
+					eq(post.type, "material"),
+					eq(postAttachment.kind, "course"),
+					eq(postAttachment.courseId, courseToAdd.id),
+				),
+			)
+			.limit(1);
+		if (existing) {
+			throw new HTTPException(409, {
+				message: "This course is already in the classroom classwork",
+			});
+		}
+
+		const created = await db.transaction(async (tx) => {
+			const [classworkPost] = await tx
+				.insert(post)
+				.values({
+					classroomId,
+					authorId,
+					type: "material",
+					title: courseToAdd.title,
+					status: "published",
+					publishedAt: new Date(),
+				})
+				.returning();
+			await tx.insert(postAttachment).values({
+				postId: classworkPost.id,
+				kind: "course",
+				courseId: courseToAdd.id,
+			});
+			return classworkPost;
+		});
+
+		return created;
 	},
 
 	async getById(classroomId: string, role: Role) {

@@ -1,5 +1,6 @@
 import type {
 	ClassroomListResponse,
+	ClassroomCourseworkResponse,
 	ClassroomMembersResponse,
 	ClassroomSingleResponse,
 } from "@shared/index";
@@ -34,5 +35,18 @@ export const classroomQueries = {
 				return res.data as ClassroomMembersResponse;
 			},
 			staleTime: 60_000,
+		}),
+	courseClasswork: (classroomId: string) =>
+		queryOptions({
+			queryKey: ["classrooms", "classwork-courses", classroomId],
+			queryFn: async () => {
+				const response = await api.get<ClassroomCourseworkResponse>(
+					`/api/classrooms/${classroomId}/classwork/courses`,
+				);
+				if (response.status !== 200) {
+					throw new Error("Failed to load classroom course classwork");
+				}
+				return response.data;
+			},
 		}),
 };

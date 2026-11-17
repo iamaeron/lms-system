@@ -11,6 +11,11 @@ import {
 } from "@solar-icons/react/linear";
 import { cn } from "cn";
 import { useState } from "react";
+import { Link } from "react-router";
+import CreateCourseModal from "@/components/teacher/create-course-modal";
+import { paths } from "@/config/paths";
+import { courseQueries } from "@/features/course/queries";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 import {
@@ -33,15 +38,30 @@ const libraryFilters = [
 	{ label: "Archived", value: "archived" },
 ];
 
-const libraryStats = [
-	{ label: "Courses", value: "0", icon: BookIcon, tone: "blue" },
-	{ label: "Lessons", value: "0", icon: PlayCircleIcon, tone: "violet" },
-	{ label: "Published", value: "0", icon: ClipboardListIcon, tone: "emerald" },
-] as const;
-
 export default function TeacherCourses() {
 	const [search, setSearch] = useState("");
 	const [status, setStatus] = useState("all");
+	const { data: response } = useSuspenseQuery(courseQueries.list());
+	const courses = response.data;
+	const filteredCourses = courses.filter((course) => {
+		const matchesSearch = `${course.title} ${course.summary ?? ""}`
+			.toLowerCase()
+			.includes(search.toLowerCase());
+		return matchesSearch && (status === "all" || course.status === status);
+	});
+	const stats = [
+		{ label: "Courses", value: courses.length, icon: BookIcon },
+		{
+			label: "Drafts",
+			value: courses.filter((course) => course.status === "draft").length,
+			icon: PlayCircleIcon,
+		},
+		{
+			label: "Published",
+			value: courses.filter((course) => course.status === "published").length,
+			icon: ClipboardListIcon,
+		},
+	];
 
 	return (
 		<div className="space-y-6 pb-8">
@@ -92,12 +112,7 @@ export default function TeacherCourses() {
 							share them with your classrooms when they’re ready.
 						</p>
 					</div>
-					<Button
-						// disabled
-						className="z-10 shrink-0 self-end bg-white text-zinc-900 shadow-white/0 hover:bg-zinc-100 sm:self-auto"
-					>
-						<AddIcon /> New course
-					</Button>
+					<CreateCourseModal />
 				</div>
 			</section>
 
@@ -105,7 +120,7 @@ export default function TeacherCourses() {
 				aria-label="Library overview"
 				className="grid gap-3 sm:grid-cols-3"
 			>
-				{libraryStats.map(({ label, value, icon: Icon }) => (
+				{stats.map(({ label, value, icon: Icon }) => (
 					<div
 						key={label}
 						className="rounded-xl bg-zinc-100 p-2 shadow-sm shadow-zinc-900/3"
@@ -177,38 +192,80 @@ export default function TeacherCourses() {
 					</div>
 				</div>
 
-				<div className="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm shadow-zinc-900/3 sm:p-10">
-					<div className="mx-auto flex max-w-lg flex-col items-center py-7 text-center">
-						<div className="relative mb-5 flex size-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
-							<SquareAcademicCapIcon size={30} />
-							<span className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full border-2 border-white bg-white text-blue-600 shadow-sm">
-								<AddIcon size={13} />
-							</span>
+				{filteredCourses.length === 0 ? (
+					<div className="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm shadow-zinc-900/3 sm:p-10">
+						<div className="mx-auto flex max-w-lg flex-col items-center py-7 text-center">
+							<div className="relative mb-5 flex size-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+								<SquareAcademicCapIcon size={30} />
+								<span className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full border-2 border-white bg-white text-blue-600 shadow-sm">
+									<AddIcon size={13} />
+								</span>
+							</div>
+							<h4 className="text-lg font-semibold text-zinc-800">
+								{search || status !== "all"
+									? "No matching courses"
+									: "Your library is ready for its first course"}
+							</h4>
+							<p className="mt-2 text-sm leading-6 text-zinc-500">
+								{search || status !== "all"
+									? "Try a different search or status filter."
+									: "Create a reusable course, arrange it into sections, and add lessons or quizzes. You can attach the content to a classroom later."}
+							</p>
+							{(search || status !== "all") && (
+								<Button
+									variant="flat"
+									className="mt-5"
+									onClick={() => {
+										setSearch("");
+										setStatus("all");
+									}}
+								>
+									Clear filters
+								</Button>
+							)}
 						</div>
-						<h4 className="text-lg font-semibold text-zinc-800">
-							{search || status !== "all"
-								? "No matching courses"
-								: "Your library is ready for its first course"}
-						</h4>
-						<p className="mt-2 text-sm leading-6 text-zinc-500">
-							{search || status !== "all"
-								? "Try a different search or status filter."
-								: "Create a reusable course, arrange it into sections, and add lessons or quizzes. You can attach the content to a classroom later."}
-						</p>
-						{(search || status !== "all") && (
-							<Button
-								variant="flat"
-								className="mt-5"
-								onClick={() => {
-									setSearch("");
-									setStatus("all");
-								}}
-							>
-								Clear filters
-							</Button>
-						)}
 					</div>
-				</div>
+				) : (
+					<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+						{filteredCourses.map((course) => (
+							<Link
+								key={course.id}
+								to={paths.portal.teacher.course.getHref(course.id)}
+								className="block overflow-hidden rounded-xl border border-zinc-200/80 bg-white shadow-sm"
+							>
+								{course.thumbnailUrl ? (
+									<img
+										src={course.thumbnailUrl}
+										alt=""
+										className="h-36 w-full object-cover"
+									/>
+								) : (
+									<div className="flex h-36 items-center justify-center bg-blue-50 text-blue-600">
+										<SquareAcademicCapIcon size={32} />
+									</div>
+								)}
+								<div className="space-y-2 p-4">
+									<div className="flex items-start justify-between gap-3">
+										<h4 className="font-semibold text-zinc-800">
+											{course.title}
+										</h4>
+										<span className="rounded-full bg-zinc-100 px-2 py-1 text-xs capitalize text-zinc-600">
+											{course.status}
+										</span>
+									</div>
+									<p className="line-clamp-2 min-h-10 text-sm text-zinc-500">
+										{course.summary || "No summary yet."}
+									</p>
+									<p className="text-xs text-zinc-500">
+										{course.department?.name ?? "No department"}
+										{course.gradeLevel ? ` · Grade ${course.gradeLevel}` : ""}
+										{` · ${course.level}`}
+									</p>
+								</div>
+							</Link>
+						))}
+					</div>
+				)}
 			</section>
 
 			<section className="grid gap-3 rounded-xl border border-blue-100 bg-blue-50/70 p-4 sm:grid-cols-[auto_1fr] sm:items-center sm:p-5">

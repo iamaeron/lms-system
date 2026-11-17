@@ -8,6 +8,8 @@ export const classroomRoutes = app
 	.get("/", ...ctrl.list)
 	.post("/", ...ctrl.create)
 	.post("/join", ...ctrl.join)
+	.get("/:classroomId/classwork/courses", ...ctrl.classworkCourses)
+	.post("/:classroomId/classwork/courses", ...ctrl.addCourseToClasswork)
 	.get("/:classroomId", ...ctrl.get)
 	.patch("/:classroomId", ...ctrl.update)
 	.post("/:classroomId/join-code", ...ctrl.regenerateJoinCode)
