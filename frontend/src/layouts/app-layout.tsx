@@ -7,7 +7,7 @@ export default function AppLayout() {
 		<div className="flex h-screen overflow-hidden bg-zinc-100">
 			<Sidebar />
 
-			<main className="m-2 min-w-0 flex-1 overflow-y-auto rounded-2xl bg-white">
+			<main className="m-2 min-h-0 min-w-0 flex-1 overflow-y-auto rounded-2xl bg-white">
 				<div className="max-w-5xl mx-auto">
 					<AppLayoutHeader />
 					<div className="p-4">
