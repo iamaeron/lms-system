@@ -94,7 +94,26 @@ export const classroomService = {
 	async getById(classroomId: string, role: Role) {
 		const room = await db.query.classroom.findFirst({
 			where: { id: classroomId },
-			with: { owner: { columns: ownerColumns } },
+			with: {
+				owner: { columns: ownerColumns },
+				members: {
+					where: { role: "student" },
+					orderBy: { joinedAt: "asc" },
+					limit: 3,
+					columns: {},
+					with: { user: { columns: ownerColumns } },
+				},
+				department: true,
+			},
+			extras: {
+				memberCount: (table, { sql }) =>
+					sql<number>`(
+            select count(*)::int
+            from ${classroomMember}
+            where ${classroomMember.classroomId} = ${table.id}
+			and ${classroomMember.role} = 'student'
+          )`.mapWith(Number),
+			},
 		});
 		if (!room) throw new HTTPException(404, { message: "Classroom not found" });
 		return serialize(room, role);

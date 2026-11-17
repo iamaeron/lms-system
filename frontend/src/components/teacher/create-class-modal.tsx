@@ -180,30 +180,57 @@ const CreateClassModal = () => {
 									</div>
 								))}
 
-								<Button
-									variant="flat"
-									className="w-full"
-									type="button"
-									onClick={() => {
-										const nextRow = Math.max(...classRows) + 1;
-										form.setFieldValue(
-											`departmentId${nextRow}` as never,
-											(departments[0]?.id ?? "") as never,
+								<form.Subscribe selector={(state) => state.values}>
+									{(values) => {
+										const lastRow = classRows[classRows.length - 1];
+										const currentSection = (values as Record<string, unknown>)[
+											`section${lastRow}`
+										];
+										const canAddClass =
+											typeof currentSection === "string" &&
+											currentSection.trim().length > 0;
+
+										return (
+											<Button
+												variant="flat"
+												className="w-full"
+												type="button"
+												disabled={!canAddClass}
+												title={
+													canAddClass
+														? undefined
+														: "Select a section before adding another class"
+													}
+												onClick={() => {
+													if (!canAddClass) return;
+													const previousRow =
+														classRows[classRows.length - 1];
+													const nextRow = Math.max(...classRows) + 1;
+													form.setFieldValue(
+														`departmentId${nextRow}` as never,
+														form.getFieldValue(
+															`departmentId${previousRow}` as never,
+														) as never,
+													);
+													form.setFieldValue(
+														`gradeLevel${nextRow}` as never,
+														form.getFieldValue(
+															`gradeLevel${previousRow}` as never,
+														) as never,
+													);
+													form.setFieldValue(
+														`section${nextRow}` as never,
+														currentSection as never,
+													);
+													setClassRows((rows) => [...rows, nextRow]);
+												}}
+											>
+												<AddIcon size={16} />
+												Add another class
+											</Button>
 										);
-										form.setFieldValue(
-											`gradeLevel${nextRow}` as never,
-											"1" as never,
-										);
-										form.setFieldValue(
-											`section${nextRow}` as never,
-											"" as never,
-										);
-										setClassRows((rows) => [...rows, nextRow]);
 									}}
-								>
-									<AddIcon size={16} />
-									Add another class
-								</Button>
+								</form.Subscribe>
 							</div>
 
 							<form.AppField name="description">

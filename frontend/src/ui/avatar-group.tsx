@@ -17,7 +17,7 @@ function AvatarGroup({ children, max, className, ...props }: AvatarGroupProps) {
 				<div
 					style={{ "--z": visible.length - index } as React.CSSProperties}
 					className={cn(
-						"relative h-max w-max border-4 border-white rounded-full transition-all duration-150 z-(--z) hover:z-30 hover:scale-105",
+						"relative flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-white transition-all duration-150 z-(--z) hover:z-30 hover:scale-105",
 						index !== 0 && "-ml-3",
 					)}
 				>
@@ -26,7 +26,7 @@ function AvatarGroup({ children, max, className, ...props }: AvatarGroupProps) {
 			))}
 
 			{overflowCount > 0 && (
-				<div className="relative z-0 -ml-3 transition-all duration-150 border-4 border-white rounded-full hover:z-30 hover:scale-105">
+				<div className="relative z-0 -ml-3 flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-white transition-all duration-150 hover:z-30 hover:scale-105">
 					<Avatar>
 						<AvatarFallback>+{overflowCount}</AvatarFallback>
 					</Avatar>

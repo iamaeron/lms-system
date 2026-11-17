@@ -1,7 +1,6 @@
 import { AltArrowLeftIcon, BellIcon } from "@solar-icons/react/linear";
 import { useQuery } from "@tanstack/react-query";
-import { useMatches, useNavigate } from "react-router";
-import { paths } from "@/config/paths";
+import { useLocation, useMatches, useNavigate } from "react-router";
 import { sessionQueryOptions } from "@/lib/session";
 import { ActionIcon } from "@/ui/action-icon";
 import { Avatar, AvatarFallback } from "@/ui/avatar";
@@ -11,13 +10,17 @@ import { Tooltip } from "@/ui/tooltip";
 const AppLayoutHeader = () => {
 	const { data: user } = useQuery(sessionQueryOptions);
 	const navigate = useNavigate();
+	const location = useLocation();
 
 	const matches = useMatches();
 	// Find the deepest match that has a title in its handle
 	const titleMatch = [...matches]
 		.reverse()
 		.find(
-			(match) => match.handle && typeof match.handle === "object" && "title" in match.handle,
+			(match) =>
+				match.handle &&
+				typeof match.handle === "object" &&
+				"title" in match.handle,
 		);
 	const handle = titleMatch?.handle as
 		| { title?: string; showBack?: boolean }
@@ -26,12 +29,14 @@ const AppLayoutHeader = () => {
 	const showBack = handle?.showBack ?? false;
 
 	const goBack = () => {
-		const historyIndex = window.history.state?.idx;
-		if (typeof historyIndex === "number" && historyIndex > 0) {
-			navigate(-1);
-			return;
-		}
-		navigate(paths.portal.teacher.classrooms.getHref());
+		// const historyIndex = window.history.state?.idx;
+		// if (typeof historyIndex === "number" && historyIndex > 0) {
+		// 	navigate(-1);
+		// 	return;
+		// }
+		const segments = location.pathname.split("/").filter(Boolean);
+		segments.pop();
+		navigate(`/${segments.join("/")}` || "/");
 	};
 
 	return (
