@@ -1,4 +1,7 @@
 import type { ClassroomMember } from "@shared/index";
+import { Link } from "react-router";
+import DefaultClassBanner from "@/components/teacher/default-class-banner";
+import { paths } from "@/config/paths";
 import { classLabel } from "@/lib/classroom";
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
 import { AvatarGroup } from "../../ui/avatar-group";
@@ -10,10 +13,14 @@ interface ClassCardProps {
 
 const ClassCard = ({ detail }: ClassCardProps) => {
 	return (
-		<div className="bg-white p-0.5 rounded-lg">
-			<div className="shadow-xl shadow-black/3 h-22 w-full bg-linear-to-br rounded-md from-teal-300 to-blue-300 font-serif italic flex flex-col text-2xl justify-end p-3 text-black/50">
-				<h3>{detail.classroom.subjectCode}</h3>
-			</div>
+		<Link
+			to={paths.portal.teacher.classroom.getHref(detail.classroom.id)}
+			className="block rounded-lg bg-white p-0.5 transition-shadow hover:shadow-lg shadow-black/5 focus-visible:outline-2 focus-visible:outline-primary"
+		>
+			<DefaultClassBanner
+				classroom={detail.classroom}
+				className="h-22 w-full flex-col justify-end rounded-md p-3"
+			/>
 
 			<div className="text-zinc-700 p-3 pb-2.5">
 				<h3>{detail.classroom.name}</h3>
@@ -42,7 +49,7 @@ const ClassCard = ({ detail }: ClassCardProps) => {
 					</p>
 				</div>
 			</div>
-		</div>
+		</Link>
 	);
 };
 

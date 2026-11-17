@@ -15,10 +15,14 @@ import {
 } from "@solar-icons/react/linear";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { cn } from "cn";
-import { useNavigate } from "react-router";
+import { NavLink, useNavigate } from "react-router";
+import { defaultClassMeshStyle } from "@/components/teacher/default-class-banner";
 import { sidebarNavigation } from "@/config/nav-links";
+import { paths } from "@/config/paths";
 import { toastRoot, toneOf } from "@/config/toast";
+import { classroomQueries } from "@/features/classroom/queries";
 import { authClient } from "@/lib/auth-client";
+import { classLabel } from "@/lib/classroom";
 import { sessionQueryOptions } from "@/lib/session";
 import { ActionIcon } from "@/ui/action-icon";
 import { Avatar, AvatarFallback } from "@/ui/avatar";
@@ -31,6 +35,7 @@ import {
 	MenuSeparator,
 	MenuTrigger,
 } from "@/ui/menu";
+import { Tooltip } from "@/ui/tooltip";
 import NavItem from "./nav-item";
 
 const Sidebar = () => {
@@ -40,6 +45,10 @@ const Sidebar = () => {
 
 	// Access the cached user session resolved by the loader
 	const { data: user, isPending } = useQuery(sessionQueryOptions);
+	const { data: classrooms } = useQuery({
+		...classroomQueries.list(),
+		enabled: user?.role === "teacher",
+	});
 
 	const handleSignOut = async () => {
 		await authClient.signOut();
@@ -49,7 +58,7 @@ const Sidebar = () => {
 
 	return (
 		// <div className="w-76 p-2 flex">
-		<aside className="relative flex w-70 flex-col overflow-hidden border border-zinc-200 bg-zinc-100">
+		<aside className="relative flex w-70 flex-col overflow-hidden bg-zinc-100">
 			<header className="flex items-center justify-between pl-3 pt-4 pr-2">
 				<div className="flex items-center gap-3 px-0.5">
 					<div className="flex items-center gap-2">
@@ -104,7 +113,7 @@ const Sidebar = () => {
 					></MenuTrigger>
 
 					<MenuPortal>
-						<MenuPositioner sideOffset={6}>
+						<MenuPositioner sideOffset={6} className="z-50">
 							<MenuPopup className="w-(--anchor-width)">
 								<MenuItem className="pl-2">
 									<UserIcon
@@ -162,17 +171,79 @@ const Sidebar = () => {
 					{sidebarNavigation[user.role].map((section) => (
 						<div
 							key={section.group}
-							className="mb-4 border-t border-zinc-200 border-dashed group first:border-0"
+							className="mb-3 border-t border-zinc-200 border-dashed group first:border-0"
 						>
-							<hr className="border-t border-white group-first:border-0 mb-4 border-dashed" />
+							<hr className="border-t border-white group-first:border-0 mb-3 border-dashed" />
 							<div className="px-3">
-								<p className="text-xs font-medium text-muted-foreground px-2 mb-1">
+								<p className="text-xs font-medium text-zinc-400 px-2 mb-1">
 									{section.group}
 								</p>
 
 								<div>
 									{section.items.map((item) => (
-										<NavItem key={item.link} item={item} />
+										<div key={item.link}>
+											<NavItem item={item} />
+											{user.role === "teacher" &&
+												item.label === "Classrooms" && (
+													<div className="relative ml-[22px] pl-2.5">
+														<span
+															aria-hidden="true"
+															className="absolute -top-1 bottom-3 -left-0.5 border-l border-zinc-300"
+														/>
+														{classrooms?.data
+															.slice(0, 5)
+															.map(({ classroom }) => (
+																<NavLink
+																	key={classroom.id}
+																	to={paths.portal.teacher.classroom.getHref(
+																		classroom.id,
+																	)}
+																	className={({ isActive }) =>
+																		`group/classroom relative my-0.5 rounded-lg px-2 min-w-0 flex py-1.25 text-sm before:absolute before:-left-3 before:bottom-1/2 before:rounded-bl-sm before:w-3 before:border-b before:border-l before:h-5 before:border-zinc-300 ${isActive ? "font-medium text-blue-500" : "text-zinc-600 hover:text-zinc-800"}`
+																	}
+																	end
+																>
+																	{({ isActive }) => (
+																		<>
+																			<div
+																				className={cn(
+																					"absolute inset-0 z-0 rounded-lg transition-[scale,transform] bg-zinc-200/70 opacity-0 group-hover/classroom:opacity-100 group-active/classroom:scale-97 duration-150",
+																				)}
+																			/>
+																			<div className="flex-1 flex min-w-0 items-center gap-2 z-2 relative">
+																				<Avatar
+																					className={cn(
+																						"size-5.5 border border-white ring-2 text-[11px] font-semibold text-zinc-800",
+																						isActive
+																							? "ring-blue-400"
+																							: "ring-white",
+																					)}
+																					style={defaultClassMeshStyle(
+																						classroom,
+																					)}
+																				>
+																					<AvatarFallback className="text-[11px] font-semibold">
+																						{classroom.name
+																							.charAt(0)
+																							.toUpperCase()}
+																					</AvatarFallback>
+																				</Avatar>
+																				<p className="flex min-w-0 flex-1 items-center gap-2">
+																					<span className="min-w-0 truncate">
+																						{classroom.subjectCode}
+																					</span>
+																					<span className="ml-auto shrink-0 text-xs text-zinc-400">
+																						{classLabel(classroom)}
+																					</span>
+																				</p>
+																			</div>
+																		</>
+																	)}
+																</NavLink>
+															))}
+													</div>
+												)}
+										</div>
 									))}
 								</div>
 							</div>

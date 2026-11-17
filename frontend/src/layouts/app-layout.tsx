@@ -4,11 +4,10 @@ import Sidebar from "@/components/layout/sidebar";
 
 export default function AppLayout() {
 	return (
-		<div className="min-h-screen flex bg-zinc-50">
+		<div className="flex h-screen overflow-hidden bg-zinc-100">
 			<Sidebar />
 
-			{/* 2. Main Content Area where nested child routes render */}
-			<main className="flex-1 w-full">
+			<main className="m-2 min-w-0 flex-1 overflow-y-auto rounded-2xl bg-white">
 				<div className="max-w-5xl mx-auto">
 					<AppLayoutHeader />
 					<div className="p-4">

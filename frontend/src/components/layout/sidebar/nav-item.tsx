@@ -8,6 +8,7 @@ interface NavItemProps {
 		icon: Icon;
 		activeIcon: Icon;
 		link: string;
+		end?: boolean;
 		badge?: undefined | string;
 	};
 }
@@ -15,12 +16,12 @@ interface NavItemProps {
 const NavItem = ({ item }: NavItemProps) => {
 	return (
 		<NavLink
-			end
+			end={item.end ?? true}
 			to={item.link}
 			className={({ isActive }) =>
 				`relative group/link flex items-center gap-3 px-2.5 py-1.5 rounded-lg text-sm transition-[colors,scale] will-change-transform ${
 					isActive
-						? "text-blue-600 font-medium"
+						? "text-blue-500 font-medium"
 						: "text-foreground border-transparent hover:text-zinc-700"
 				}`
 			}

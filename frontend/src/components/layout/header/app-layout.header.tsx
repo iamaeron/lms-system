@@ -1,33 +1,58 @@
-import { BellIcon } from "@solar-icons/react/linear";
+import { AltArrowLeftIcon, BellIcon } from "@solar-icons/react/linear";
 import { useQuery } from "@tanstack/react-query";
-import { useMatches } from "react-router";
+import { useMatches, useNavigate } from "react-router";
+import { paths } from "@/config/paths";
 import { sessionQueryOptions } from "@/lib/session";
 import { ActionIcon } from "@/ui/action-icon";
 import { Avatar, AvatarFallback } from "@/ui/avatar";
+import { Button } from "@/ui/button";
 import { Tooltip } from "@/ui/tooltip";
 
 const AppLayoutHeader = () => {
 	const { data: user } = useQuery(sessionQueryOptions);
+	const navigate = useNavigate();
 
 	const matches = useMatches();
 	// Find the deepest match that has a title in its handle
 	const titleMatch = [...matches]
 		.reverse()
 		.find(
-			(match) =>
-				match.handle &&
-				typeof match.handle === "object" &&
-				"title" in match.handle,
+			(match) => match.handle && typeof match.handle === "object" && "title" in match.handle,
 		);
-	const title = (titleMatch?.handle as { title?: string } | undefined)?.title;
+	const handle = titleMatch?.handle as
+		| { title?: string; showBack?: boolean }
+		| undefined;
+	const title = handle?.title;
+	const showBack = handle?.showBack ?? false;
+
+	const goBack = () => {
+		const historyIndex = window.history.state?.idx;
+		if (typeof historyIndex === "number" && historyIndex > 0) {
+			navigate(-1);
+			return;
+		}
+		navigate(paths.portal.teacher.classrooms.getHref());
+	};
 
 	return (
 		<header className="p-4 flex items-center justify-between">
-			{title && (
-				<h1 className="text-xl font-medium tracking-tight text-foreground">
-					{title}
-				</h1>
-			)}
+			<div className="flex min-w-0 items-center gap-2">
+				{showBack && (
+					<Button
+						variant="ghost"
+						size="icon"
+						aria-label="Go back"
+						onClick={goBack}
+					>
+						<AltArrowLeftIcon size={20} />
+					</Button>
+				)}
+				{title && (
+					<h1 className="truncate text-xl font-medium tracking-tight text-foreground">
+						{title}
+					</h1>
+				)}
+			</div>
 
 			<div className="flex items-center gap-1">
 				<Tooltip content="Notifications">

@@ -74,6 +74,21 @@ export function createRouter(queryClient: QueryClient) {
 								})),
 						},
 						{
+							path: paths.portal.teacher.classroom.path,
+							loader: async ({ params }) => {
+								if (!params.classroomId)
+									throw new Error("Missing classroom ID");
+								return queryClient.query(
+									classroomQueries.detail(params.classroomId),
+								);
+							},
+							handle: { title: "Classroom", showBack: true },
+							lazy: () =>
+								import("./routes/teacher/classroom").then((m) => ({
+									Component: m.default,
+								})),
+						},
+						{
 							path: paths.portal.teacher.courses.path,
 							handle: { title: "Course Library" },
 							lazy: () =>
