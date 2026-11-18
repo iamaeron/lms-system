@@ -226,32 +226,58 @@ export default function TeacherCourses() {
 						</div>
 					</div>
 				) : (
-					<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+					<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 						{filteredCourses.map((course) => (
 							<Link
 								key={course.id}
 								to={paths.portal.teacher.course.getHref(course.id)}
-								className="block overflow-hidden rounded-xl bg-zinc-50"
+								className="block pt-2 group"
 							>
-								{course.thumbnailUrl ? (
-									<img
-										src={course.thumbnailUrl}
-										alt=""
-										className="h-36 w-full object-cover"
+								<div className="group group-hover:rotate-3 relative h-[168px] w-34 transition-transform group-hover:-translate-y-1">
+									<div
+										aria-hidden="true"
+										className="absolute inset-x-1 bottom-0.5 h-2 rounded-b-sm border-x border-b border-zinc-300 bg-[repeating-linear-gradient(to_bottom,#f4f4f5_0px,#f4f4f5_1px,#d4d4d8_1px,#d4d4d8_2px)] shadow-[0_5px_8px_-5px_var(--color-zinc-500)]"
 									/>
-								) : (
-									<div className="flex h-36 items-center justify-center bg-blue-50 text-blue-600">
-										<SquareAcademicCapIcon size={32} />
+									<div className="absolute inset-x-0 top-0 h-40 overflow-hidden rounded-r-md rounded-l-[3px] border-2 border-white/15 bg-blue-950 shadow-[inset_0_5px_0_0_white]">
+										{course.thumbnailUrl ? (
+											<img
+												src={course.thumbnailUrl}
+												alt=""
+												className="absolute inset-0 size-full object-cover"
+											/>
+										) : (
+											<div className="absolute inset-0 overflow-hidden bg-linear-to-br from-indigo-700 via-blue-800 to-purple-800 p-3 text-white">
+												<div
+													aria-hidden="true"
+													className="absolute inset-2 border border-white/25"
+												/>
+												<div
+													aria-hidden="true"
+													className="absolute -right-8 -top-8 size-28 rounded-full border-[18px] border-white/5"
+												/>
+												<div className="relative flex h-full flex-col items-center justify-center text-center">
+													<BookIcon className="mb-3 text-white/75" size={23} />
+													<p className="line-clamp-4 text-sm leading-snug tracking-wide">
+														{course.title}
+													</p>
+													{/* <span className="mt-3 h-0.5 w-8 bg-white/80" /> */}
+												</div>
+											</div>
+										)}
+										<div
+											aria-hidden="true"
+											className="absolute inset-y-0 left-0 w-2 border-r border-white/15 bg-black/15 shadow-[inset_-2px_0_3px_rgb(0_0_0/0.15)]"
+										/>
 									</div>
-								)}
-								<div className="space-y-2 p-4">
+								</div>
+								<div className="space-y-2 pt-4">
 									<div className="flex items-start justify-between gap-3">
-										<h4 className="font-semibold text-zinc-800">
+										<h4 className="font-medium text-zinc-800">
 											{course.title}
 										</h4>
-										<span className="rounded-full bg-zinc-100 px-2 py-1 text-xs capitalize text-zinc-600">
+										{/* <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs capitalize text-zinc-600">
 											{course.status}
-										</span>
+										</span> */}
 									</div>
 									<p className="line-clamp-2 min-h-10 text-sm text-zinc-500">
 										{course.summary || "No summary yet."}

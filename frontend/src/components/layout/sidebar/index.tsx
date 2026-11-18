@@ -57,7 +57,7 @@ const Sidebar = () => {
 
 	return (
 		// <div className="w-76 p-2 flex">
-		<aside className="relative flex w-70 flex-col overflow-hidden bg-zinc-100">
+		<aside className="relative flex w-70 flex-col overflow-y-auto bg-zinc-100">
 			<header className="flex items-center justify-between pl-3 pt-4 pr-2">
 				<div className="flex items-center gap-3 px-0.5">
 					<div className="flex items-center gap-2">

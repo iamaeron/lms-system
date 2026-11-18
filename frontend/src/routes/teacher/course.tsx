@@ -196,7 +196,7 @@ export default function TeacherCourse() {
 					</div>
 				)}
 
-				<div className="sticky bottom-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white/95 p-3 shadow-lg backdrop-blur">
+				<div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white/95 p-3 shadow-lg backdrop-blur">
 					<p className="text-sm text-zinc-600">
 						{Object.keys(lessonDrafts).length + Object.keys(sectionDrafts).length + Object.keys(quizDrafts).length
 							? `${Object.keys(lessonDrafts).length + Object.keys(sectionDrafts).length + Object.keys(quizDrafts).length} item${Object.keys(lessonDrafts).length + Object.keys(sectionDrafts).length + Object.keys(quizDrafts).length === 1 ? "" : "s"} with unsaved changes`
